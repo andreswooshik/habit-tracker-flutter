@@ -26,22 +26,20 @@ abstract class IStreakCalculator {
   /// - Current date context
   ///
   /// Returns [StreakData] containing:
-  /// - `currentStreak`: Number of consecutive completions ending today/yesterday
-  /// - `longestStreak`: Maximum consecutive completions in history
-  /// - `lastCompletedDate`: Most recent completion (or null)
-  /// - `isOnStreak`: Whether the streak is currently active
+  /// - `current`: Number of consecutive completions ending today/yesterday
+  /// - `longest`: Maximum consecutive completions in history
   ///
   /// Examples:
   /// ```dart
   /// // Daily habit completed last 5 days
   /// final streak = calculator.calculateStreak(habit, completions);
-  /// print(streak.currentStreak);  // 5
-  /// print(streak.isOnStreak);     // true
+  /// print(streak.current);  // 5
+  /// print(streak.hasActiveStreak);     // true
   ///
   /// // Weekly habit (Mondays) - missed this week
   /// final weeklyStreak = calculator.calculateStreak(weeklyHabit, dates);
-  /// print(weeklyStreak.currentStreak);  // 0
-  /// print(weeklyStreak.longestStreak);  // 8 (from past)
+  /// print(weeklyStreak.current);  // 0
+  /// print(weeklyStreak.longest);  // 8 (from past)
   /// ```
   ///
   /// Parameters:
