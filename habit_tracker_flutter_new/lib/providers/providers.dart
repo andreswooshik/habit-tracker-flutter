@@ -25,3 +25,6 @@ export 'calendar_providers.dart';
 
 // Analytics and insights providers
 export 'insights_providers.dart';
+
+// Achievements and consistency tracking
+export 'achievements_providers.dart';
