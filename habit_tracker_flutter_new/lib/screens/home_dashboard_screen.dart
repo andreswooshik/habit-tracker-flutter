@@ -11,7 +11,7 @@ class HomeDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Habit Tracker'),
+        title: const Text('TrackIt!'),
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today),
