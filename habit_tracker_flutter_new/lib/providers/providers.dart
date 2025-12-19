@@ -16,3 +16,12 @@ export 'completions_notifier.dart';
 
 // Date selection and navigation
 export 'selected_date_provider.dart';
+
+// Computed providers (derived state)
+export 'computed_providers.dart';
+
+// Calendar visualization providers
+export 'calendar_providers.dart';
+
+// Analytics and insights providers
+export 'insights_providers.dart';
