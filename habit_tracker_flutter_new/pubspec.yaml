@@ -42,6 +42,9 @@ dependencies:
   uuid: ^4.0.0              # Generate unique IDs for habits
   intl: ^0.18.0             # Date formatting and localization
   equatable: ^2.0.5         # Value equality for immutable models
+  
+  # Charts
+  fl_chart: ^0.69.0         # Beautiful charts for analytics and dashboards
 
 dev_dependencies:
   flutter_test:

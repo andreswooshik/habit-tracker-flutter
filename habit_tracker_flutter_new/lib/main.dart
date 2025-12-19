@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habit_tracker_flutter_new/screens/habit_list_screen.dart';
+import 'package:habit_tracker_flutter_new/screens/home_dashboard_screen.dart';
 
 void main() {
   runApp(
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const HabitListScreen(),
+      home: const HomeDashboardScreen(),
     );
   }
 }
