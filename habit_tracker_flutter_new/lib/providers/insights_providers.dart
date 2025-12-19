@@ -6,24 +6,6 @@ import 'package:habit_tracker_flutter_new/models/streak_data.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/services/services.dart';
 
-/// **Phase 5: Insights Providers**
-///
-/// Provides comprehensive analytics and insights by combining data from
-/// multiple sources: habits, completions, and streaks.
-
-/// Computes comprehensive insights across all habits by combining:
-/// - Active habits list
-/// - All completions data
-/// - Streak calculations for each habit
-/// - Category-based performance
-/// - Risk assessments
-///
-/// Example:
-/// ```dart
-/// final insights = ref.watch(habitInsightsProvider);
-/// print('Active habits: ${insights.totalActiveHabits}');
-/// print('Overall rate: ${(insights.overallCompletionRate * 100).toStringAsFixed(1)}%');
-/// ```
 final habitInsightsProvider = Provider<HabitInsights>((ref) {
   final habitState = ref.watch(habitsProvider);
   final completionsState = ref.watch(completionsProvider);
@@ -51,7 +33,8 @@ final habitInsightsProvider = Provider<HabitInsights>((ref) {
   final streaks = <String, StreakData>{};
   for (final habit in activeHabits) {
     final habitCompletions = completionsMap[habit.id] ?? {};
-    streaks[habit.id] = streakCalculator.calculateStreak(habit, habitCompletions);
+    streaks[habit.id] =
+        streakCalculator.calculateStreak(habit, habitCompletions);
   }
 
   // Find longest current streak
@@ -68,8 +51,8 @@ final habitInsightsProvider = Provider<HabitInsights>((ref) {
   // Calculate average streak
   double averageStreak = 0.0;
   if (activeHabits.isNotEmpty) {
-    final totalStreak = streaks.values
-        .fold(0, (sum, streak) => sum + streak.current);
+    final totalStreak =
+        streaks.values.fold(0, (sum, streak) => sum + streak.current);
     averageStreak = totalStreak / activeHabits.length;
   }
 
@@ -150,10 +133,10 @@ final habitInsightsProvider = Provider<HabitInsights>((ref) {
     mostCompletedCount: mostCompletedCount,
     totalAchievements: totalAchievements,
     habitsAtRisk: habitsAtRisk,
-    perfectDaysCount: perfectDaysStats['total'] as int,
-    currentPerfectStreak: perfectDaysStats['current'] as int,
-    bestCategory: categoryStats['best'] as String?,
-    worstCategory: categoryStats['worst'] as String?,
+    perfectDaysCount: perfectDaysStats['total']!,
+    currentPerfectStreak: perfectDaysStats['current']!,
+    bestCategory: categoryStats['best'],
+    worstCategory: categoryStats['worst'],
   );
 });
 
@@ -165,14 +148,17 @@ double _calculateOverallCompletionRate(
 ) {
   if (habits.isEmpty) return 0.0;
 
-  final endDate = DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
+  final endDate =
+      DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
   final startDate = endDate.subtract(const Duration(days: 30));
 
   int totalScheduled = 0;
   int totalCompleted = 0;
 
   for (final habit in habits) {
-    for (var date = startDate; date.isBefore(endDate) || date.isAtSameMomentAs(endDate); date = date.add(const Duration(days: 1))) {
+    for (var date = startDate;
+        date.isBefore(endDate) || date.isAtSameMomentAs(endDate);
+        date = date.add(const Duration(days: 1))) {
       if (habit.isScheduledFor(date)) {
         totalScheduled++;
         final normalizedDate = DateTime(date.year, date.month, date.day);
@@ -195,14 +181,17 @@ double _calculateConsistency(
 ) {
   if (habits.isEmpty) return 0.0;
 
-  final endDate = DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
+  final endDate =
+      DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
   final startDate = endDate.subtract(Duration(days: days - 1));
 
   int totalScheduled = 0;
   int totalCompleted = 0;
 
   for (final habit in habits) {
-    for (var date = startDate; date.isBefore(endDate) || date.isAtSameMomentAs(endDate); date = date.add(const Duration(days: 1))) {
+    for (var date = startDate;
+        date.isBefore(endDate) || date.isAtSameMomentAs(endDate);
+        date = date.add(const Duration(days: 1))) {
       if (habit.isScheduledFor(date)) {
         totalScheduled++;
         final normalizedDate = DateTime(date.year, date.month, date.day);
@@ -231,7 +220,8 @@ List<String> _findHabitsAtRisk(
   final atRisk = <String>[];
   for (final habit in habits) {
     if (habit.isScheduledFor(yesterday)) {
-      final normalizedYesterday = DateTime(yesterday.year, yesterday.month, yesterday.day);
+      final normalizedYesterday =
+          DateTime(yesterday.year, yesterday.month, yesterday.day);
       if (!(completions[habit.id]?.contains(normalizedYesterday) ?? false)) {
         atRisk.add(habit.id);
       }
@@ -252,13 +242,16 @@ Map<String, int> _calculatePerfectDaysStats(
     return {'total': 0, 'current': 0};
   }
 
-  final today = DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
-  
+  final today =
+      DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
+
   // Count total perfect days in last 90 days
   final startDate = today.subtract(const Duration(days: 90));
   int totalPerfectDays = 0;
-  
-  for (var date = startDate; date.isBefore(today) || date.isAtSameMomentAs(today); date = date.add(const Duration(days: 1))) {
+
+  for (var date = startDate;
+      date.isBefore(today) || date.isAtSameMomentAs(today);
+      date = date.add(const Duration(days: 1))) {
     bool isPerfectDay = true;
     for (final habit in habits) {
       if (habit.isScheduledFor(date)) {
@@ -276,7 +269,9 @@ Map<String, int> _calculatePerfectDaysStats(
 
   // Calculate current consecutive perfect days
   int currentPerfectStreak = 0;
-  for (var date = today; date.isAfter(startDate); date = date.subtract(const Duration(days: 1))) {
+  for (var date = today;
+      date.isAfter(startDate);
+      date = date.subtract(const Duration(days: 1))) {
     bool isPerfectDay = true;
     for (final habit in habits) {
       if (habit.isScheduledFor(date)) {
@@ -314,7 +309,8 @@ Map<String, String?> _calculateCategoryPerformance(
   final categoryRates = <HabitCategory, double>{};
   final categoryCounts = <HabitCategory, int>{};
 
-  final endDate = DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
+  final endDate =
+      DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
   final startDate = endDate.subtract(const Duration(days: 30));
 
   // Calculate completion rate for each category
@@ -326,7 +322,9 @@ Map<String, String?> _calculateCategoryPerformance(
     int completed = 0;
 
     for (final habit in categoryHabits) {
-      for (var date = startDate; date.isBefore(endDate) || date.isAtSameMomentAs(endDate); date = date.add(const Duration(days: 1))) {
+      for (var date = startDate;
+          date.isBefore(endDate) || date.isAtSameMomentAs(endDate);
+          date = date.add(const Duration(days: 1))) {
         if (habit.isScheduledFor(date)) {
           scheduled++;
           final normalizedDate = DateTime(date.year, date.month, date.day);
@@ -369,3 +367,54 @@ Map<String, String?> _calculateCategoryPerformance(
     'worst': worstCategory?.displayName,
   };
 }
+
+final habitInsightsForHabitProvider =
+    Provider.family<HabitInsights, String>((ref, habitId) {
+  final habitState = ref.watch(habitsProvider);
+  final completionsState = ref.watch(completionsProvider);
+  final selectedDate = ref.watch(selectedDateProvider);
+
+  // Find the specific habit
+  final habit = habitState.habits.firstWhere(
+    (h) => h.id == habitId,
+    orElse: () => throw Exception('Habit not found'),
+  );
+
+  // Get completions for this habit
+  final habitCompletions = completionsState.completions[habitId] ?? {};
+
+  // For a single habit, most insights values are simplified
+  return HabitInsights(
+    totalActiveHabits: 1,
+    totalCompletions: habitCompletions.length,
+    overallCompletionRate: _calculateOverallCompletionRate(
+      [habit],
+      {habitId: habitCompletions},
+      selectedDate,
+    ),
+    averageStreak: 0.0,
+    longestCurrentStreak: 0,
+    topStreakHabitName: habit.name,
+    weeklyConsistency: _calculateConsistency(
+      [habit],
+      {habitId: habitCompletions},
+      selectedDate,
+      7,
+    ),
+    monthlyConsistency: _calculateConsistency(
+      [habit],
+      {habitId: habitCompletions},
+      selectedDate,
+      30,
+    ),
+    mostCompletedHabitId: habitId,
+    mostCompletedHabitName: habit.name,
+    mostCompletedCount: habitCompletions.length,
+    totalAchievements: 0,
+    habitsAtRisk: [],
+    perfectDaysCount: habitCompletions.length,
+    currentPerfectStreak: 0,
+    bestCategory: habit.category.displayName,
+    worstCategory: null,
+  );
+});

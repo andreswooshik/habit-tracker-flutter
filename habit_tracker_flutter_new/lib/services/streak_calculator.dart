@@ -2,20 +2,6 @@ import '../models/habit.dart';
 import '../models/streak_data.dart';
 import 'interfaces/i_streak_calculator.dart';
 
-/// Basic implementation of streak calculation logic.
-///
-/// Calculates current and longest streaks for habits based on completion history.
-/// Handles:
-/// - All habit frequencies (daily, weekdays, weekends, custom)
-/// - Grace period logic (1-day buffer for missed completions)
-/// - Timezone-normalized dates
-/// - Streak continuity across frequency patterns
-///
-/// Algorithm:
-/// 1. Normalize all dates to midnight (remove time component)
-/// 2. Filter completions to only scheduled days
-/// 3. Walk backwards from today to find current streak
-/// 4. Scan entire history to find longest streak
 class BasicStreakCalculator implements IStreakCalculator {
   /// Creates a [BasicStreakCalculator] instance.
   const BasicStreakCalculator();
@@ -70,11 +56,6 @@ class BasicStreakCalculator implements IStreakCalculator {
     return _calculateLongestStreakFromHistory(habit, normalizedCompletions);
   }
 
-  /// Calculates the current streak starting from the last completion date.
-  ///
-  /// Walks backwards from [lastCompleted] counting consecutive scheduled days
-  /// that have completions. Stops when a scheduled day is missed (considering
-  /// grace period if applicable).
   int _calculateCurrentStreak(
     Habit habit,
     Set<DateTime> completions,
@@ -114,10 +95,6 @@ class BasicStreakCalculator implements IStreakCalculator {
     return streak;
   }
 
-  /// Calculates the longest streak from the entire completion history.
-  ///
-  /// Scans through all completions chronologically, tracking the longest
-  /// consecutive sequence of scheduled day completions.
   int _calculateLongestStreakFromHistory(
     Habit habit,
     Set<DateTime> completions,
@@ -125,7 +102,7 @@ class BasicStreakCalculator implements IStreakCalculator {
     if (completions.isEmpty) return 0;
 
     final sortedCompletions = completions.toList()..sort();
-    
+
     int longestStreak = 0;
     int currentStreak = 0;
     DateTime? previousScheduledDate;
@@ -149,15 +126,16 @@ class BasicStreakCalculator implements IStreakCalculator {
         // Consecutive scheduled day - continue streak
         currentStreak++;
         missedOneDay = false;
-      } else if (habit.hasGracePeriod && 
-                 !missedOneDay && 
-                 completion == _findNextScheduledDate(habit, nextExpectedDate)) {
+      } else if (habit.hasGracePeriod &&
+          !missedOneDay &&
+          completion == _findNextScheduledDate(habit, nextExpectedDate)) {
         // Missed one scheduled day but within grace period
         currentStreak++;
         missedOneDay = true;
       } else {
         // Streak broken - start new streak
-        longestStreak = longestStreak > currentStreak ? longestStreak : currentStreak;
+        longestStreak =
+            longestStreak > currentStreak ? longestStreak : currentStreak;
         currentStreak = 1;
         missedOneDay = false;
       }
@@ -169,13 +147,9 @@ class BasicStreakCalculator implements IStreakCalculator {
     return longestStreak > currentStreak ? longestStreak : currentStreak;
   }
 
-  /// Finds the next scheduled date after the given date.
-  ///
-  /// Scans forward day-by-day until finding a date that matches the habit's
-  /// frequency pattern.
   DateTime _findNextScheduledDate(Habit habit, DateTime from) {
     DateTime nextDate = from.add(const Duration(days: 1));
-    
+
     // Scan up to 7 days forward to find next scheduled day
     for (int i = 0; i < 7; i++) {
       if (habit.isScheduledFor(nextDate)) {
@@ -188,13 +162,9 @@ class BasicStreakCalculator implements IStreakCalculator {
     return from.add(const Duration(days: 1));
   }
 
-  /// Finds the previous scheduled date before the given date.
-  ///
-  /// Scans backward day-by-day until finding a date that matches the habit's
-  /// frequency pattern.
   DateTime _findPreviousScheduledDate(Habit habit, DateTime from) {
     DateTime prevDate = from.subtract(const Duration(days: 1));
-    
+
     // Scan up to 7 days backward to find previous scheduled day
     for (int i = 0; i < 7; i++) {
       if (habit.isScheduledFor(prevDate)) {
@@ -207,9 +177,6 @@ class BasicStreakCalculator implements IStreakCalculator {
     return from.subtract(const Duration(days: 1));
   }
 
-  /// Normalizes a date to midnight (removes time component).
-  ///
-  /// All dates are compared at day-level granularity for streak calculations.
   DateTime _normalizeDate(DateTime date) {
     return DateTime(date.year, date.month, date.day);
   }

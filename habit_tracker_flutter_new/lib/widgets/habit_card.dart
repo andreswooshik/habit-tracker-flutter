@@ -5,15 +5,8 @@ import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/services/services.dart';
 import 'package:habit_tracker_flutter_new/screens/add_edit_habit_screen.dart';
+import 'package:habit_tracker_flutter_new/screens/habit_detail_screen.dart';
 
-/// A Strava-inspired reusable habit card widget
-/// 
-/// Follows SOLID principles:
-/// - Single Responsibility: Displays a single habit with interactions
-/// - Open/Closed: Extensible via callbacks without modifying core widget
-/// - Liskov Substitution: Can be used anywhere a widget is expected
-/// - Interface Segregation: Minimal required parameters
-/// - Dependency Inversion: Depends on abstractions (callbacks) not concrete implementations
 class HabitCard extends ConsumerWidget {
   final Habit habit;
   final DateTime selectedDate;
@@ -73,14 +66,14 @@ class HabitCard extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(
-            color: isCompleted 
+            color: isCompleted
                 ? Colors.green.withValues(alpha: 0.3)
                 : Colors.grey.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
         child: InkWell(
-          onTap: onTap,
+          onTap: onTap ?? () => _navigateToDetail(context),
           onLongPress: () => _handleEdit(context, ref),
           borderRadius: BorderRadius.circular(16),
           child: Padding(
@@ -260,6 +253,14 @@ class HabitCard extends ConsumerWidget {
         ),
       );
     }
+  }
+
+  void _navigateToDetail(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => HabitDetailScreen(habit: habit),
+      ),
+    );
   }
 
   Future<bool> _showDeleteConfirmation(BuildContext context) async {
