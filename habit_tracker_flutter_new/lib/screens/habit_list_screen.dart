@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habit_tracker_flutter_new/models/habit.dart';
-import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
-import 'package:habit_tracker_flutter_new/services/services.dart';
+import 'package:habit_tracker_flutter_new/widgets/habit_card.dart';
+import 'package:habit_tracker_flutter_new/screens/add_edit_habit_screen.dart';
 import 'package:intl/intl.dart';
 
 /// Main screen displaying the list of habits for the selected date
@@ -58,7 +57,7 @@ class HabitListScreen extends ConsumerWidget {
                     itemCount: todaysHabits.length,
                     itemBuilder: (context, index) {
                       final habit = todaysHabits[index];
-                      return _HabitCard(
+                      return HabitCard(
                         habit: habit,
                         selectedDate: selectedDate,
                       );
@@ -67,11 +66,16 @@ class HabitListScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // TODO: Navigate to AddEditHabitScreen
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const AddEditHabitScreen(),
+            ),
+          );
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('New Habit'),
       ),
     );
   }
@@ -198,204 +202,7 @@ class _DateProgressCard extends StatelessWidget {
   }
 }
 
-/// Individual habit card widget
-class _HabitCard extends ConsumerWidget {
-  final Habit habit;
-  final DateTime selectedDate;
 
-  const _HabitCard({
-    required this.habit,
-    required this.selectedDate,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isCompleted = ref.watch(
-      habitCompletionProvider((habitId: habit.id, date: selectedDate)),
-    );
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () {
-          // TODO: Navigate to HabitDetailScreen
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Completion checkbox
-              GestureDetector(
-                onTap: () {
-                  if (isCompleted) {
-                    ref.read(completionsProvider.notifier)
-                        .markIncomplete(habit.id, selectedDate);
-                  } else {
-                    ref.read(completionsProvider.notifier)
-                        .markComplete(habit.id, selectedDate);
-                  }
-                },
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isCompleted 
-                          ? Colors.green 
-                          : Colors.grey,
-                      width: 2,
-                    ),
-                    color: isCompleted 
-                        ? Colors.green 
-                        : Colors.transparent,
-                  ),
-                  child: isCompleted
-                      ? const Icon(
-                          Icons.check,
-                          size: 18,
-                          color: Colors.white,
-                        )
-                      : null,
-                ),
-              ),
-              
-              const SizedBox(width: 16),
-              
-              // Habit info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      habit.name,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        decoration: isCompleted 
-                            ? TextDecoration.lineThrough 
-                            : null,
-                        color: isCompleted 
-                            ? Colors.grey 
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          _getCategoryIcon(habit.category),
-                          size: 16,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          habit.category.displayName,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Icon(
-                          Icons.repeat,
-                          size: 16,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          habit.frequency.displayName,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              
-              // Streak indicator
-              _StreakBadge(habitId: habit.id),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  IconData _getCategoryIcon(HabitCategory category) {
-    switch (category.name) {
-      case 'health':
-        return Icons.favorite;
-      case 'productivity':
-        return Icons.work;
-      case 'mindfulness':
-        return Icons.self_improvement;
-      case 'social':
-        return Icons.people;
-      case 'creativity':
-        return Icons.palette;
-      case 'learning':
-        return Icons.school;
-      case 'fitness':
-        return Icons.fitness_center;
-      case 'finance':
-        return Icons.attach_money;
-      default:
-        return Icons.stars;
-    }
-  }
-}
-
-/// Streak badge showing current streak
-class _StreakBadge extends ConsumerWidget {
-  final String habitId;
-
-  const _StreakBadge({required this.habitId});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final streakData = ref.watch(streakDataProvider(habitId));
-
-    if (streakData.current == 0) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: _getStreakColor(streakData.current).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: _getStreakColor(streakData.current),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '🔥',
-            style: const TextStyle(fontSize: 14),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            '${streakData.current}',
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: _getStreakColor(streakData.current),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _getStreakColor(int streak) {
-    if (streak >= 30) return Colors.purple;
-    if (streak >= 7) return Colors.orange;
-    return Colors.blue;
-  }
-}
 
 /// Empty state when no habits scheduled for the day
 class _EmptyState extends StatelessWidget {
