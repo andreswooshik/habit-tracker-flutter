@@ -92,9 +92,9 @@ class HiveCompletionsRepository implements ICompletionsRepository {
     _box = null;
   }
 
-  /// Normalize date to midnight UTC for consistent storage
+  /// Normalize date to midnight local time for consistent storage
   DateTime _normalizeDate(DateTime date) {
-    return DateTime.utc(date.year, date.month, date.day);
+    return DateTime(date.year, date.month, date.day);
   }
 
   /// Generate a composite key from habitId and date

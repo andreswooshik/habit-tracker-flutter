@@ -156,13 +156,17 @@ double _calculateOverallCompletionRate(
   int totalCompleted = 0;
 
   for (final habit in habits) {
+    final habitCompletions = completions[habit.id] ?? {};
+    
     for (var date = startDate;
         date.isBefore(endDate) || date.isAtSameMomentAs(endDate);
         date = date.add(const Duration(days: 1))) {
       if (habit.isScheduledFor(date)) {
         totalScheduled++;
-        final normalizedDate = DateTime(date.year, date.month, date.day);
-        if (completions[habit.id]?.contains(normalizedDate) ?? false) {
+        // Check if any completion matches this date
+        final isCompleted = habitCompletions.any((c) =>
+            c.year == date.year && c.month == date.month && c.day == date.day);
+        if (isCompleted) {
           totalCompleted++;
         }
       }
@@ -189,13 +193,17 @@ double _calculateConsistency(
   int totalCompleted = 0;
 
   for (final habit in habits) {
+    final habitCompletions = completions[habit.id] ?? {};
+    
     for (var date = startDate;
         date.isBefore(endDate) || date.isAtSameMomentAs(endDate);
         date = date.add(const Duration(days: 1))) {
       if (habit.isScheduledFor(date)) {
         totalScheduled++;
-        final normalizedDate = DateTime(date.year, date.month, date.day);
-        if (completions[habit.id]?.contains(normalizedDate) ?? false) {
+        // Check if any completion matches this date
+        final isCompleted = habitCompletions.any((c) =>
+            c.year == date.year && c.month == date.month && c.day == date.day);
+        if (isCompleted) {
           totalCompleted++;
         }
       }
@@ -255,8 +263,10 @@ Map<String, int> _calculatePerfectDaysStats(
     bool isPerfectDay = true;
     for (final habit in habits) {
       if (habit.isScheduledFor(date)) {
-        final normalizedDate = DateTime(date.year, date.month, date.day);
-        if (!(completions[habit.id]?.contains(normalizedDate) ?? false)) {
+        final habitCompletions = completions[habit.id] ?? {};
+        final isCompleted = habitCompletions.any((c) =>
+            c.year == date.year && c.month == date.month && c.day == date.day);
+        if (!isCompleted) {
           isPerfectDay = false;
           break;
         }
@@ -275,8 +285,10 @@ Map<String, int> _calculatePerfectDaysStats(
     bool isPerfectDay = true;
     for (final habit in habits) {
       if (habit.isScheduledFor(date)) {
-        final normalizedDate = DateTime(date.year, date.month, date.day);
-        if (!(completions[habit.id]?.contains(normalizedDate) ?? false)) {
+        final habitCompletions = completions[habit.id] ?? {};
+        final isCompleted = habitCompletions.any((c) =>
+            c.year == date.year && c.month == date.month && c.day == date.day);
+        if (!isCompleted) {
           isPerfectDay = false;
           break;
         }
@@ -322,13 +334,16 @@ Map<String, String?> _calculateCategoryPerformance(
     int completed = 0;
 
     for (final habit in categoryHabits) {
+      final habitCompletions = completions[habit.id] ?? {};
+      
       for (var date = startDate;
           date.isBefore(endDate) || date.isAtSameMomentAs(endDate);
           date = date.add(const Duration(days: 1))) {
         if (habit.isScheduledFor(date)) {
           scheduled++;
-          final normalizedDate = DateTime(date.year, date.month, date.day);
-          if (completions[habit.id]?.contains(normalizedDate) ?? false) {
+          final isCompleted = habitCompletions.any((c) =>
+              c.year == date.year && c.month == date.month && c.day == date.day);
+          if (isCompleted) {
             completed++;
           }
         }

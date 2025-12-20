@@ -4,6 +4,7 @@ import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/models/habit_frequency.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
+import 'package:habit_tracker_flutter_new/services/category_style_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// Strava-inspired Add/Edit Habit Screen
@@ -536,7 +537,9 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _getCategoryColor(category);
+    final styleService = CategoryStyleService();
+    final color = styleService.getColor(category);
+    final icon = styleService.getIcon(category);
 
     return InkWell(
       onTap: onSelected,
@@ -556,7 +559,7 @@ class _CategoryChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              _getCategoryIcon(category),
+              icon,
               size: 18,
               color: isSelected ? Colors.white : color,
             ),
@@ -574,51 +577,6 @@ class _CategoryChip extends StatelessWidget {
     );
   }
 
-  IconData _getCategoryIcon(HabitCategory category) {
-    switch (category.name) {
-      case 'health':
-        return Icons.favorite;
-      case 'productivity':
-        return Icons.work;
-      case 'mindfulness':
-        return Icons.self_improvement;
-      case 'social':
-        return Icons.people;
-      case 'creativity':
-        return Icons.palette;
-      case 'learning':
-        return Icons.school;
-      case 'fitness':
-        return Icons.fitness_center;
-      case 'finance':
-        return Icons.attach_money;
-      default:
-        return Icons.stars;
-    }
-  }
-
-  Color _getCategoryColor(HabitCategory category) {
-    switch (category.name) {
-      case 'health':
-        return Colors.red;
-      case 'productivity':
-        return Colors.orange;
-      case 'mindfulness':
-        return Colors.purple;
-      case 'social':
-        return Colors.pink;
-      case 'creativity':
-        return Colors.indigo;
-      case 'learning':
-        return Colors.blue;
-      case 'fitness':
-        return Colors.green;
-      case 'finance':
-        return Colors.teal;
-      default:
-        return Colors.grey;
-    }
-  }
 }
 
 /// Frequency option radio button

@@ -4,6 +4,7 @@ import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/services/services.dart';
+import 'package:habit_tracker_flutter_new/services/category_style_service.dart';
 import 'package:habit_tracker_flutter_new/screens/add_edit_habit_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/habit_detail_screen.dart';
 import 'package:habit_tracker_flutter_new/widgets/animations/animations.dart';
@@ -62,7 +63,7 @@ class HabitCard extends ConsumerWidget {
         }
       },
       child: Hero(
-        tag: 'habit_${habit.id}_${selectedDate.millisecondsSinceEpoch}',
+        tag: 'habit_card_${habit.id}',
         child: Material(
           type: MaterialType.transparency,
           child: Card(
@@ -206,9 +207,9 @@ class HabitCard extends ConsumerWidget {
           children: [
             _buildInfoChip(
               context,
-              icon: _getCategoryIcon(habit.category),
+              icon: CategoryStyleService().getIcon(habit.category),
               label: habit.category.displayName,
-              color: _getCategoryColor(habit.category),
+              color: CategoryStyleService().getColor(habit.category),
             ),
             _buildInfoChip(
               context,
@@ -394,51 +395,6 @@ class HabitCard extends ConsumerWidget {
     }
   }
 
-  IconData _getCategoryIcon(HabitCategory category) {
-    switch (category.name) {
-      case 'health':
-        return Icons.favorite;
-      case 'productivity':
-        return Icons.work;
-      case 'mindfulness':
-        return Icons.self_improvement;
-      case 'social':
-        return Icons.people;
-      case 'creativity':
-        return Icons.palette;
-      case 'learning':
-        return Icons.school;
-      case 'fitness':
-        return Icons.fitness_center;
-      case 'finance':
-        return Icons.attach_money;
-      default:
-        return Icons.stars;
-    }
-  }
-
-  Color _getCategoryColor(HabitCategory category) {
-    switch (category.name) {
-      case 'health':
-        return Colors.red;
-      case 'productivity':
-        return Colors.orange;
-      case 'mindfulness':
-        return Colors.purple;
-      case 'social':
-        return Colors.pink;
-      case 'creativity':
-        return Colors.indigo;
-      case 'learning':
-        return Colors.blue;
-      case 'fitness':
-        return Colors.green;
-      case 'finance':
-        return Colors.teal;
-      default:
-        return Colors.grey;
-    }
-  }
 }
 
 /// Streak badge showing current streak with Strava-style visual feedback

@@ -29,23 +29,31 @@ class RandomDataGenerator implements IDataGenerator {
   static const Map<HabitCategory, List<String>> _habitTemplates = {
     HabitCategory.health: [
       'Morning Walk',
-      'Drink Water',
+      'Drink 8 Glasses Water',
       'Take Vitamins',
       'Healthy Breakfast',
-      'Stretch',
+      'Stretch 10 Minutes',
       'Evening Jog',
-      'Meal Prep',
+      'Meal Prep Sunday',
       '8 Hours Sleep',
+      'Floss Teeth',
+      'Posture Check',
+      'Eye Rest Break',
+      'Healthy Snack',
     ],
     HabitCategory.fitness: [
       'Gym Workout',
       'Yoga Session',
       'Run 5K',
-      'Push-ups',
-      'Planks',
+      '50 Push-ups',
+      '2 Min Plank',
       'Swimming',
-      'Cycling',
+      'Cycling 30 Min',
       'Weight Training',
+      'HIIT Workout',
+      'Core Exercises',
+      'Leg Day',
+      'Cardio Session',
     ],
     HabitCategory.mindfulness: [
       'Morning Meditation',
@@ -53,19 +61,27 @@ class RandomDataGenerator implements IDataGenerator {
       'Deep Breathing',
       'Mindful Walking',
       'Evening Reflection',
-      'Affirmations',
+      'Daily Affirmations',
       'Nature Time',
-      'Digital Detox',
+      'Digital Detox Hour',
+      'Body Scan',
+      'Mindful Eating',
+      'Stress Relief',
+      'Present Moment',
     ],
     HabitCategory.productivity: [
       'Daily Planning',
-      'Focus Block',
+      '2 Hour Focus Block',
       'Inbox Zero',
       'Review Tasks',
       'Learn New Skill',
       'Read Articles',
       'Clear Desk',
       'Time Blocking',
+      'Weekly Review',
+      'Priority Setting',
+      'Deep Work Session',
+      'No Distractions',
     ],
     HabitCategory.social: [
       'Call Family',
@@ -76,6 +92,10 @@ class RandomDataGenerator implements IDataGenerator {
       'Group Activity',
       'Volunteer Work',
       'Quality Time',
+      'Reach Out',
+      'Active Listening',
+      'Compliment Someone',
+      'Social Connection',
     ],
     HabitCategory.creativity: [
       'Creative Writing',
@@ -86,6 +106,10 @@ class RandomDataGenerator implements IDataGenerator {
       'Brainstorm Ideas',
       'Learn Instrument',
       'Creative Reading',
+      'Doodle Break',
+      'Poetry Writing',
+      'Design Practice',
+      'Craft Time',
     ],
     HabitCategory.learning: [
       'Read 30 Minutes',
@@ -96,16 +120,24 @@ class RandomDataGenerator implements IDataGenerator {
       'Study Session',
       'Podcast Listen',
       'Skill Practice',
+      'Duolingo Lesson',
+      'Book Chapter',
+      'Educational Video',
+      'Practice Coding',
     ],
     HabitCategory.finance: [
       'Track Expenses',
       'Review Budget',
-      'Save Money',
+      'Save \$10',
       'Investment Check',
       'Bill Payment',
       'Financial Reading',
       'No Impulse Buy',
       'Meal Budget',
+      'Check Accounts',
+      'Update Spreadsheet',
+      'Savings Goal',
+      'Price Compare',
     ],
     HabitCategory.other: [
       'Daily Habit',
@@ -116,6 +148,10 @@ class RandomDataGenerator implements IDataGenerator {
       'Self Improvement',
       'Daily Practice',
       'Consistent Action',
+      'Morning Routine',
+      'Evening Routine',
+      'Weekly Check-in',
+      'Personal Growth',
     ],
   };
 
@@ -142,21 +178,25 @@ class RandomDataGenerator implements IDataGenerator {
           ? _randomCustomDays()
           : null;
 
-      // Random creation date (0-90 days ago)
-      final daysAgo = _random.nextInt(91);
+      // Random creation date (0-30 days ago) - recent habits for demo
+      final daysAgo = _random.nextInt(31);
       final createdAt = DateTime.now().subtract(Duration(days: daysAgo));
 
-      // 20% chance of archived, 10% chance of grace period
-      final isArchived = _random.nextDouble() < 0.2;
-      final hasGracePeriod = _random.nextDouble() < 0.1;
+      // 10% chance of archived (less archived for demo), 15% chance of grace period
+      final isArchived = _random.nextDouble() < 0.1;
+      final hasGracePeriod = _random.nextDouble() < 0.15;
 
       // Random target days (14, 21, 30, 60, 90, 365)
       final targetOptions = [14, 21, 30, 60, 90, 365];
       final targetDays = targetOptions[_random.nextInt(targetOptions.length)];
 
+      // Generate a description for the habit
+      final description = _generateDescription(name, category);
+
       habits.add(Habit.create(
         id: _uuid.v4(),
         name: name,
+        description: description,
         frequency: frequency,
         customDays: customDays,
         category: category,
@@ -230,7 +270,9 @@ class RandomDataGenerator implements IDataGenerator {
 
     // Generate completions for each habit
     final completionsMap = <String, Set<DateTime>>{};
-    final endDate = DateTime.now();
+    // Normalize to today at midnight to ensure we include today's data
+    final now = DateTime.now();
+    final endDate = DateTime(now.year, now.month, now.day);
     final startDate = endDate.subtract(Duration(days: daysOfHistory));
 
     for (final habit in habits) {
@@ -239,24 +281,51 @@ class RandomDataGenerator implements IDataGenerator {
           ? habit.createdAt
           : startDate;
 
-      // Vary completion rate per habit (0.4 to 1.0)
+      // Vary completion rate per habit (0.75 to 0.95) - very high for demo
       // This creates realistic variation: some users are very consistent, some struggle
-      final baseRate = 0.4 + (_random.nextDouble() * 0.6);
+      final baseRate = 0.75 + (_random.nextDouble() * 0.20);
       
-      // Create a "decay" pattern - users tend to be more consistent at the start
+      // Create realistic patterns with streaks and breaks
       final completions = <DateTime>{};
       DateTime current = _normalizeDate(habitStartDate);
       final normalizedEnd = _normalizeDate(endDate);
+      
+      // Simulate streak patterns
+      int consecutiveDays = 0;
+      int missedDays = 0;
+      final streakBonus = _random.nextDouble() * 0.15; // 0-15% bonus when on streak
 
       while (current.isBefore(normalizedEnd) || current.isAtSameMomentAs(normalizedEnd)) {
         if (habit.isScheduledFor(current)) {
-          // Completion rate decays over time (simulate motivation decline)
+          // Completion rate with streak momentum
           final daysSinceStart = current.difference(habitStartDate).inDays;
-          final decayFactor = 1.0 - (daysSinceStart / (daysOfHistory * 2));
-          final adjustedRate = (baseRate * decayFactor).clamp(0.3, 1.0);
+          final daysUntilEnd = normalizedEnd.difference(current).inDays;
+          
+          // Boost recent days (last 7 days) to ensure weekly chart has data
+          final recencyBoost = daysUntilEnd <= 7 ? 1.4 : 1.0;
+          
+          // Slight decay over time but not too aggressive
+          final decayFactor = 1.0 - (daysSinceStart / (daysOfHistory * 3));
+          
+          // Streak bonus - being consistent makes you more likely to continue
+          final streakFactor = consecutiveDays > 0 ? (1.0 + streakBonus) : 1.0;
+          
+          // Weekend effect - slightly lower completion on weekends for some habits
+          final isWeekend = current.weekday == DateTime.saturday || current.weekday == DateTime.sunday;
+          final weekendFactor = (isWeekend && habit.frequency != HabitFrequency.weekends) ? 0.85 : 1.0;
+          
+          final adjustedRate = (baseRate * decayFactor * streakFactor * weekendFactor * recencyBoost).clamp(0.7, 1.0);
 
           if (_random.nextDouble() < adjustedRate) {
             completions.add(current);
+            consecutiveDays++;
+            missedDays = 0;
+          } else {
+            missedDays++;
+            // Reset streak after 2 missed days
+            if (missedDays >= 2) {
+              consecutiveDays = 0;
+            }
           }
         }
         
@@ -298,13 +367,16 @@ class RandomDataGenerator implements IDataGenerator {
 
   /// Returns a random frequency with realistic distribution.
   HabitFrequency _randomFrequency() {
-    final value = _random.nextDouble();
+    // For demo purposes, all habits are Every Day so all 8 show daily
+    // This makes the demo cleaner and avoids confusion
+    return HabitFrequency.everyDay;
     
-    // Weighted distribution (more daily/weekday habits)
-    if (value < 0.5) return HabitFrequency.everyDay;      // 50%
-    if (value < 0.75) return HabitFrequency.weekdays;     // 25%
-    if (value < 0.85) return HabitFrequency.custom;       // 10%
-    return HabitFrequency.weekends;                        // 15%
+    // Original weighted distribution (uncomment for realistic variation):
+    // final value = _random.nextDouble();
+    // if (value < 0.5) return HabitFrequency.everyDay;      // 50%
+    // if (value < 0.75) return HabitFrequency.weekdays;     // 25%
+    // if (value < 0.85) return HabitFrequency.custom;       // 10%
+    // return HabitFrequency.weekends;                        // 15%
   }
 
   /// Generates random custom days (1-7 for Monday-Sunday).
@@ -322,5 +394,33 @@ class RandomDataGenerator implements IDataGenerator {
   /// Normalizes a date to midnight (removes time component).
   DateTime _normalizeDate(DateTime date) {
     return DateTime(date.year, date.month, date.day);
+  }
+
+  /// Generates a realistic description for a habit
+  String? _generateDescription(String name, HabitCategory category) {
+    // 70% chance of having a description
+    if (_random.nextDouble() > 0.7) return null;
+
+    final descriptions = {
+      'Morning Walk': 'Start the day with a refreshing 20-minute walk',
+      'Drink 8 Glasses Water': 'Stay hydrated throughout the day',
+      'Take Vitamins': 'Daily multivitamin with breakfast',
+      'Gym Workout': 'Full body workout at the gym',
+      'Yoga Session': '30 minutes of yoga and stretching',
+      'Morning Meditation': '10 minutes of mindfulness meditation',
+      'Gratitude Journal': 'Write 3 things I\'m grateful for',
+      'Daily Planning': 'Plan tomorrow\'s tasks and priorities',
+      'Read 30 Minutes': 'Read before bed to unwind',
+      'Track Expenses': 'Log all spending in budget app',
+      'Creative Writing': 'Write at least 500 words',
+      'Call Family': 'Check in with parents or siblings',
+      'Run 5K': 'Morning run around the neighborhood',
+      '50 Push-ups': 'Build upper body strength',
+      'Deep Breathing': '5 minutes of breathing exercises',
+      'Language Practice': 'Practice Spanish on Duolingo',
+      'No Impulse Buy': 'Think twice before purchasing',
+    };
+
+    return descriptions[name] ?? 'Building this habit for personal growth';
   }
 }

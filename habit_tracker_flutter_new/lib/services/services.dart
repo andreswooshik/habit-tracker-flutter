@@ -3,10 +3,13 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'streak_calculator.dart';
 import 'data_generator.dart';
+import 'category_style_service.dart';
 import 'interfaces/i_streak_calculator.dart';
 import 'interfaces/i_data_generator.dart';
 import '../models/streak_data.dart';
 import '../providers/providers.dart';
+
+export 'category_style_service.dart';
 
 final streakCalculatorProvider = Provider<IStreakCalculator>((ref) {
   return const BasicStreakCalculator();

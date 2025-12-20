@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/providers/habits_notifier.dart';
 import 'package:habit_tracker_flutter_new/providers/completions_notifier.dart';
+import 'package:habit_tracker_flutter_new/services/services.dart';
 
 /// Enum for time range selection
 enum TimeRange {
@@ -256,34 +257,22 @@ class HabitStreak {
 final streakLeaderboardProvider = Provider<List<HabitStreak>>((ref) {
   final habits = ref.watch(habitsProvider).habits;
   final completions = ref.watch(completionsProvider).completions;
+  final streakCalculator = ref.watch(streakCalculatorProvider);
 
   final streaks = <HabitStreak>[];
 
   for (final habit in habits) {
+    if (habit.isArchived) continue; // Skip archived habits
+    
     final habitCompletions = completions[habit.id] ?? {};
     
-    // Calculate current streak
-    int currentStreak = 0;
-    final today = DateTime.now();
-    var date = DateTime(today.year, today.month, today.day);
-    
-    while (habitCompletions.contains(date) || !habit.isScheduledFor(date)) {
-      if (habitCompletions.contains(date)) {
-        currentStreak++;
-      }
-      date = date.subtract(const Duration(days: 1));
-      
-      // Safety check to avoid infinite loop
-      if (currentStreak > 365) break;
-    }
-
-    // Calculate longest streak (simplified version)
-    int longestStreak = currentStreak;
+    // Use the proper streak calculator service for consistency
+    final streakData = streakCalculator.calculateStreak(habit, habitCompletions);
     
     streaks.add(HabitStreak(
       habit: habit,
-      currentStreak: currentStreak,
-      longestStreak: longestStreak,
+      currentStreak: streakData.current,
+      longestStreak: streakData.longest,
     ));
   }
 
