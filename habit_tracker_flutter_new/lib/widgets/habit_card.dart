@@ -62,7 +62,7 @@ class HabitCard extends ConsumerWidget {
         }
       },
       child: Hero(
-        tag: 'habit_${habit.id}',
+        tag: 'habit_${habit.id}_${selectedDate.millisecondsSinceEpoch}',
         child: Material(
           type: MaterialType.transparency,
           child: Card(
@@ -139,38 +139,49 @@ class HabitCard extends ConsumerWidget {
     WidgetRef ref,
     bool isCompleted,
   ) {
+    final isToday = _isToday(selectedDate);
+    final canToggle = isToday ||
+        isCompleted; // Can always unmark, but can only mark complete today
+
     return GestureDetector(
-      onTap: () => _toggleCompletion(ref, isCompleted),
-      child: BounceAnimation(
-        shouldAnimate: isCompleted,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: isCompleted ? Colors.green : Colors.grey.shade400,
-              width: 2.5,
+      onTap: canToggle
+          ? () => _toggleCompletion(ref, isCompleted)
+          : () => _showNotTodayMessage(context),
+      child: Opacity(
+        opacity: canToggle ? 1.0 : 0.5,
+        child: BounceAnimation(
+          shouldAnimate: isCompleted,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isCompleted
+                    ? Colors.green
+                    : (canToggle ? Colors.grey.shade400 : Colors.grey.shade300),
+                width: 2.5,
+              ),
+              color: isCompleted ? Colors.green : Colors.transparent,
+              boxShadow: isCompleted
+                  ? [
+                      BoxShadow(
+                        color: Colors.green.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : null,
             ),
-            color: isCompleted ? Colors.green : Colors.transparent,
-            boxShadow: isCompleted
-                ? [
-                    BoxShadow(
-                      color: Colors.green.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                    ),
-                  ]
+            child: isCompleted
+                ? const Icon(
+                    Icons.check,
+                    size: 20,
+                    color: Colors.white,
+                  )
                 : null,
           ),
-          child: isCompleted
-              ? const Icon(
-                  Icons.check,
-                  size: 20,
-                  color: Colors.white,
-                )
-              : null,
         ),
       ),
     );
@@ -248,6 +259,12 @@ class HabitCard extends ConsumerWidget {
             selectedDate,
           );
     } else {
+      // Check if the date is today
+      if (!_isToday(selectedDate)) {
+        _showNotTodayMessage(ref.context);
+        return;
+      }
+
       // Show confirmation when marking as complete
       final context = ref.context;
       final confirmed = await showDialog<bool>(
@@ -294,6 +311,35 @@ class HabitCard extends ConsumerWidget {
             );
       }
     }
+  }
+
+  void _showNotTodayMessage(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.info_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text('Habits can only be marked complete for today'),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.orange.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
   }
 
   void _handleEdit(BuildContext context, WidgetRef ref) {
