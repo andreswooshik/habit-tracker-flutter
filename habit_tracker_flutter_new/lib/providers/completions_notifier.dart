@@ -3,7 +3,7 @@ import '../repositories/interfaces/i_completions_repository.dart';
 import '../main.dart' show completionsRepositoryProvider;
 
 /// Immutable state container for habit completions
-/// 
+///
 /// Maps habit IDs to sets of completion dates
 class CompletionsState {
   /// Map of habit ID to set of completion dates
@@ -99,14 +99,14 @@ class CompletionsState {
 }
 
 /// StateNotifier for managing habit completions
-/// 
+///
 /// Tracks when habits are completed using a Map with String keys and Set of DateTime values
 /// for efficient O(1) lookups and set operations.
-/// 
+///
 /// All dates are normalized to remove time components for consistent comparisons.
 class CompletionsNotifier extends StateNotifier<CompletionsState> {
   final ICompletionsRepository _repository;
-  
+
   CompletionsNotifier(this._repository) : super(CompletionsState.initial()) {
     _loadCompletionsFromRepository();
   }
@@ -121,7 +121,8 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
         errorMessage: null,
       );
     } catch (e) {
-      state = CompletionsState.error('Failed to load completions: ${e.toString()}');
+      state =
+          CompletionsState.error('Failed to load completions: ${e.toString()}');
     }
   }
 
@@ -130,10 +131,19 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
     return DateTime(date.year, date.month, date.day);
   }
 
+  /// Checks if a date is today
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    final normalizedDate = _normalizeDate(date);
+    final normalizedToday = _normalizeDate(now);
+    return normalizedDate.isAtSameMomentAs(normalizedToday);
+  }
+
   /// Toggles completion status for a habit on a specific date
-  /// 
+  ///
   /// If the habit is completed on the date, it marks it incomplete.
   /// If the habit is not completed on the date, it marks it complete.
+  /// Habits can only be marked complete for today.
   /// Returns the new completion status (true if now complete, false if now incomplete).
   Future<bool> toggleCompletion(String habitId, DateTime date) async {
     try {
@@ -143,8 +153,9 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
       }
 
       final normalizedDate = _normalizeDate(date);
-      final currentCompletions = Map<String, Set<DateTime>>.from(state.completions);
-      
+      final currentCompletions =
+          Map<String, Set<DateTime>>.from(state.completions);
+
       // Get or create the set of completions for this habit
       final habitCompletions = Set<DateTime>.from(
         currentCompletions[habitId] ?? {},
@@ -156,6 +167,13 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
         habitCompletions.remove(normalizedDate);
         await _repository.removeCompletion(habitId, normalizedDate);
       } else {
+        // Only allow marking complete if the date is today
+        if (!_isToday(date)) {
+          state = state.copyWith(
+            errorMessage: 'Habits can only be marked complete for today',
+          );
+          return false;
+        }
         habitCompletions.add(normalizedDate);
         await _repository.addCompletion(habitId, normalizedDate);
       }
@@ -183,7 +201,8 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   }
 
   /// Marks a habit as complete on a specific date
-  /// 
+  ///
+  /// Habits can only be marked complete for today.
   /// Returns true if successful, false otherwise.
   Future<bool> markComplete(String habitId, DateTime date) async {
     try {
@@ -192,9 +211,18 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
         return false;
       }
 
+      // Only allow marking complete if the date is today
+      if (!_isToday(date)) {
+        state = state.copyWith(
+          errorMessage: 'Habits can only be marked complete for today',
+        );
+        return false;
+      }
+
       final normalizedDate = _normalizeDate(date);
-      final currentCompletions = Map<String, Set<DateTime>>.from(state.completions);
-      
+      final currentCompletions =
+          Map<String, Set<DateTime>>.from(state.completions);
+
       // Get or create the set of completions for this habit
       final habitCompletions = Set<DateTime>.from(
         currentCompletions[habitId] ?? {},
@@ -223,7 +251,7 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   }
 
   /// Marks a habit as incomplete on a specific date
-  /// 
+  ///
   /// Returns true if successful, false otherwise.
   Future<bool> markIncomplete(String habitId, DateTime date) async {
     try {
@@ -233,8 +261,9 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
       }
 
       final normalizedDate = _normalizeDate(date);
-      final currentCompletions = Map<String, Set<DateTime>>.from(state.completions);
-      
+      final currentCompletions =
+          Map<String, Set<DateTime>>.from(state.completions);
+
       // Get the set of completions for this habit
       final habitCompletions = currentCompletions[habitId];
       if (habitCompletions == null) {
@@ -272,7 +301,7 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   }
 
   /// Marks multiple dates as complete for a habit in one operation
-  /// 
+  ///
   /// This is more efficient than calling markComplete multiple times.
   /// Returns the number of dates successfully marked complete.
   Future<int> bulkComplete(String habitId, List<DateTime> dates) async {
@@ -287,8 +316,9 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
       }
 
       final normalizedDates = dates.map(_normalizeDate).toSet();
-      final currentCompletions = Map<String, Set<DateTime>>.from(state.completions);
-      
+      final currentCompletions =
+          Map<String, Set<DateTime>>.from(state.completions);
+
       // Get or create the set of completions for this habit
       final habitCompletions = Set<DateTime>.from(
         currentCompletions[habitId] ?? {},
@@ -319,7 +349,7 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   }
 
   /// Marks multiple dates as incomplete for a habit in one operation
-  /// 
+  ///
   /// This is more efficient than calling markIncomplete multiple times.
   /// Returns the number of dates successfully marked incomplete.
   Future<int> bulkIncomplete(String habitId, List<DateTime> dates) async {
@@ -334,8 +364,9 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
       }
 
       final normalizedDates = dates.map(_normalizeDate).toSet();
-      final currentCompletions = Map<String, Set<DateTime>>.from(state.completions);
-      
+      final currentCompletions =
+          Map<String, Set<DateTime>>.from(state.completions);
+
       // Get the set of completions for this habit
       final habitCompletions = currentCompletions[habitId];
       if (habitCompletions == null) {
@@ -345,7 +376,8 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
 
       // Remove all dates from the set
       final updatedCompletions = Set<DateTime>.from(habitCompletions);
-      final removedCount = normalizedDates.where(updatedCompletions.remove).length;
+      final removedCount =
+          normalizedDates.where(updatedCompletions.remove).length;
 
       // Remove each from repository
       for (final date in normalizedDates) {
@@ -375,11 +407,12 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   }
 
   /// Removes all completions for a specific habit
-  /// 
+  ///
   /// Useful when a habit is deleted.
   Future<void> removeHabitCompletions(String habitId) async {
     try {
-      final currentCompletions = Map<String, Set<DateTime>>.from(state.completions);
+      final currentCompletions =
+          Map<String, Set<DateTime>>.from(state.completions);
       currentCompletions.remove(habitId);
 
       // Delete from repository
@@ -415,7 +448,8 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
         errorMessage: null,
       );
     } catch (e) {
-      state = CompletionsState.error('Failed to load completions: ${e.toString()}');
+      state =
+          CompletionsState.error('Failed to load completions: ${e.toString()}');
     }
   }
 
@@ -438,10 +472,11 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
 }
 
 /// Global provider for CompletionsNotifier
-/// 
+///
 /// This is the single source of truth for completion data in the application.
 /// Use this provider throughout the app to access and modify completion data.
-final completionsProvider = StateNotifierProvider<CompletionsNotifier, CompletionsState>((ref) {
+final completionsProvider =
+    StateNotifierProvider<CompletionsNotifier, CompletionsState>((ref) {
   final repository = ref.watch(completionsRepositoryProvider);
   return CompletionsNotifier(repository);
 });
