@@ -170,7 +170,7 @@ Current Streak:
 Longest Streak:
 1. Sort completion dates ascending
 2. Track current and max streak counters
-3. Iterate through dates: 
+3. Iterate through dates: F
    - If date continues streak → increment
    - If date breaks streak → reset current, update max
 4. Return maximum streak found
@@ -804,7 +804,8 @@ This project demonstrates mastery of:
 ---
 
 ## 👤 Author
-
+**RSeldon06**
+- GitHub: [@RSeldon06](https://github.com/RSeldon06)
 **Andres Wooshik**
 - GitHub: [@andreswooshik](https://github.com/andreswooshik)
 - Repository: [habit-tracker-flutter](https://github.com/andreswooshik/habit-tracker-flutter)
