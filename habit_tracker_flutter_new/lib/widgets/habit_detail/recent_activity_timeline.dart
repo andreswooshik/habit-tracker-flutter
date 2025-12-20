@@ -161,7 +161,7 @@ class _TimelineItem extends StatelessWidget {
                   boxShadow: [
                     BoxShadow(
                       color: (isToday ? Colors.green : Colors.blue)
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                       blurRadius: 4,
                       spreadRadius: 1,
                     ),

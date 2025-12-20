@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/models/habit_frequency.dart';
-import 'package:habit_tracker_flutter_new/providers/calendar_providers.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 
 void main() {

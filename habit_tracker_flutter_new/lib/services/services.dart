@@ -5,7 +5,6 @@ import 'streak_calculator.dart';
 import 'data_generator.dart';
 import 'interfaces/i_streak_calculator.dart';
 import 'interfaces/i_data_generator.dart';
-import '../models/habit.dart';
 import '../models/streak_data.dart';
 import '../providers/providers.dart';
 

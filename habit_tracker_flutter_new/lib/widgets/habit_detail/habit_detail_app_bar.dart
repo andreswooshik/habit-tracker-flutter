@@ -37,7 +37,7 @@ class HabitDetailAppBar extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: [
                 categoryColor,
-                categoryColor.withOpacity(0.7),
+                categoryColor.withValues(alpha: 0.7),
               ],
             ),
           ),
@@ -49,13 +49,13 @@ class HabitDetailAppBar extends StatelessWidget {
                 Icon(
                   _getCategoryIcon(habit.category),
                   size: 64,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   _getFrequencyText(),
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 14,
                   ),
                 ),

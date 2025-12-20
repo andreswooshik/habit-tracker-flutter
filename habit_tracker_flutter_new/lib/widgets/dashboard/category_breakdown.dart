@@ -117,10 +117,10 @@ class CategoryBreakdown extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: _getCategoryColor(category).withOpacity(0.1),
+        color: _getCategoryColor(category).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _getCategoryColor(category).withOpacity(0.3),
+          color: _getCategoryColor(category).withValues(alpha: 0.3),
         ),
       ),
       child: Row(

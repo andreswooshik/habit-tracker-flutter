@@ -162,20 +162,6 @@ class BasicStreakCalculator implements IStreakCalculator {
     return from.add(const Duration(days: 1));
   }
 
-  DateTime _findPreviousScheduledDate(Habit habit, DateTime from) {
-    DateTime prevDate = from.subtract(const Duration(days: 1));
-
-    // Scan up to 7 days backward to find previous scheduled day
-    for (int i = 0; i < 7; i++) {
-      if (habit.isScheduledFor(prevDate)) {
-        return prevDate;
-      }
-      prevDate = prevDate.subtract(const Duration(days: 1));
-    }
-
-    // Fallback: return previous day if no scheduled day found
-    return from.subtract(const Duration(days: 1));
-  }
 
   DateTime _normalizeDate(DateTime date) {
     return DateTime(date.year, date.month, date.day);

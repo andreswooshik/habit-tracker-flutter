@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker_flutter_new/config/app_theme.dart';
 import 'package:habit_tracker_flutter_new/screens/home_dashboard_screen.dart';
 
 void main() {
@@ -18,19 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'TrackIt!',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-        cardTheme: CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
+      theme: AppTheme.lightTheme,
       home: const HomeDashboardScreen(),
     );
   }

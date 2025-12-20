@@ -11,7 +11,6 @@ final calendarDataProvider = Provider.autoDispose
   final habitCompletions = completionsState.completions[params.habitId] ?? {};
 
   // Generate all dates in the month
-  final firstDay = DateTime(params.year, params.month, 1);
   final lastDay = DateTime(params.year, params.month + 1, 0);
 
   final calendarData = <DateTime, int>{};

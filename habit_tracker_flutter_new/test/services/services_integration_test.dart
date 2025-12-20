@@ -29,7 +29,6 @@ void main() {
         category: HabitCategory.health,
         frequency: HabitFrequency.everyDay,
       );
-      final today = DateTime(2024, 1, 15);
       final completions = {
         DateTime(2024, 1, 13),
         DateTime(2024, 1, 14),
@@ -104,7 +103,6 @@ void main() {
       expect(dataset.completions, hasLength(10));
 
       // Calculate streaks for all habits
-      final today = DateTime.now();
       for (final habit in dataset.habits) {
         final completions = dataset.completions[habit.id] ?? {};
         final streak = calculator.calculateStreak(
@@ -130,7 +128,6 @@ void main() {
 
       final habit = dataset.habits.first;
       final completions = dataset.completions[habit.id] ?? {};
-      final today = DateTime.now();
 
       final streak = calculator.calculateStreak(
         habit,
@@ -211,7 +208,6 @@ void main() {
       expect(dataset.habits, hasLength(5));
 
       // 2. Analyze each habit
-      final today = DateTime.now();
       final streaks = <String, int>{};
       for (final habit in dataset.habits) {
         final completions = dataset.completions[habit.id] ?? {};
