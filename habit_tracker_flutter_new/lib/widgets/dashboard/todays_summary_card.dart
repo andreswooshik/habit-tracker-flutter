@@ -157,22 +157,6 @@ class TodaysSummaryCard extends ConsumerWidget {
                         ],
                       ),
 
-                      const SizedBox(height: 16),
-
-                      // Complete All Button
-                      if (totalCount > 0 && completedCount < totalCount)
-                        FilledButton.icon(
-                          onPressed: () => _completeAllHabits(
-                              ref, todaysHabits, selectedDate),
-                          icon: const Icon(Icons.done_all, size: 20),
-                          label: const Text('Complete All'),
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ),
@@ -260,13 +244,6 @@ class TodaysSummaryCard extends ConsumerWidget {
       return '🌱 Good start! Let\'s build momentum!';
     } else {
       return '🚀 Ready to start? Complete your first habit!';
-    }
-  }
-
-  void _completeAllHabits(WidgetRef ref, List<dynamic> habits, DateTime date) {
-    final completionsNotifier = ref.read(completionsProvider.notifier);
-    for (final habit in habits) {
-      completionsNotifier.markComplete(habit.id, date);
     }
   }
 }

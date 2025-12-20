@@ -229,17 +229,59 @@ class HabitCard extends ConsumerWidget {
     );
   }
 
-  void _toggleCompletion(WidgetRef ref, bool isCompleted) {
+  void _toggleCompletion(WidgetRef ref, bool isCompleted) async {
     if (isCompleted) {
+      // Unmark as complete - no confirmation needed
       ref.read(completionsProvider.notifier).markIncomplete(
             habit.id,
             selectedDate,
           );
     } else {
-      ref.read(completionsProvider.notifier).markComplete(
-            habit.id,
-            selectedDate,
-          );
+      // Show confirmation when marking as complete
+      final context = ref.context;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext dialogContext) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text('Complete Habit?'),
+              ),
+            ],
+          ),
+          content: Text(
+            'Mark "${habit.name}" as completed for today?',
+            style: const TextStyle(fontSize: 16),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton.icon(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              icon: const Icon(Icons.check, size: 20),
+              label: const Text('Complete'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        ref.read(completionsProvider.notifier).markComplete(
+              habit.id,
+              selectedDate,
+            );
+      }
     }
   }
 
