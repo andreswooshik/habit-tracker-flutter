@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker_flutter_new/models/habit.dart';
-import 'package:habit_tracker_flutter_new/models/habit_state.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/models/habit_frequency.dart';
 import 'package:habit_tracker_flutter_new/providers/habits_notifier.dart';

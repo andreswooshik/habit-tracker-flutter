@@ -98,7 +98,7 @@ class CompletionsState {
 
 /// StateNotifier for managing habit completions
 /// 
-/// Tracks when habits are completed using a Map<String, Set<DateTime>> structure
+/// Tracks when habits are completed using a Map with String keys and Set of DateTime values
 /// for efficient O(1) lookups and set operations.
 /// 
 /// All dates are normalized to remove time components for consistent comparisons.

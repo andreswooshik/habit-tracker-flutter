@@ -151,7 +151,7 @@ abstract class IDataGenerator {
   ///
   /// Returns: [GeneratedData] containing:
   /// - `habits`: List of generated habits
-  /// - `completions`: Map of habitId -> Set<DateTime> completions
+  /// - `completions`: Map of habitId to Set of DateTime completions
   ///
   /// Generated data characteristics:
   /// - ✅ Varied completion rates per habit (some consistent, some struggling)

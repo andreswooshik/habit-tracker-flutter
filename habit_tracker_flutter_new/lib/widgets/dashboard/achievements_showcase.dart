@@ -38,7 +38,7 @@ class AchievementsShowcase extends ConsumerWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.2),
+                    color: Colors.amber.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -141,13 +141,13 @@ class _AchievementItem extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isUnlocked
-            ? Colors.amber.withOpacity(0.1)
-            : Colors.grey.withOpacity(0.05),
+            ? Colors.amber.withValues(alpha: 0.1)
+            : Colors.grey.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isUnlocked
-              ? Colors.amber.withOpacity(0.3)
-              : Colors.grey.withOpacity(0.2),
+              ? Colors.amber.withValues(alpha: 0.3)
+              : Colors.grey.withValues(alpha: 0.2),
         ),
       ),
       child: Row(

@@ -30,8 +30,8 @@ class StreakDisplayCard extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                streakColor.withOpacity(0.1),
-                streakColor.withOpacity(0.05),
+                streakColor.withValues(alpha: 0.1),
+                streakColor.withValues(alpha: 0.05),
               ],
             ),
             borderRadius: BorderRadius.circular(16),
@@ -58,7 +58,7 @@ class StreakDisplayCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.2),
+                        color: Colors.orange.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(

@@ -240,8 +240,8 @@ class HabitInsights extends Equatable {
   @override
   String toString() {
     return 'HabitInsights(habits: $totalActiveHabits, '
-        'completionRate: ${completionRatePercentage}, '
-        'weeklyConsistency: ${weeklyConsistencyPercentage}, '
+        'completionRate: $completionRatePercentage, '
+        'weeklyConsistency: $weeklyConsistencyPercentage, '
         'longestStreak: $longestCurrentStreak)';
   }
 }
