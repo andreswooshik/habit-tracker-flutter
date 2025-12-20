@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
+import 'package:habit_tracker_flutter_new/services/category_style_service.dart';
 
 class HabitDetailAppBar extends StatelessWidget {
   final Habit habit;
@@ -16,7 +17,8 @@ class HabitDetailAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categoryColor = _getCategoryColor(habit.category);
+    final styleService = CategoryStyleService();
+    final categoryColor = styleService.getColor(habit.category);
 
     return SliverAppBar(
       expandedHeight: 200,
@@ -47,7 +49,7 @@ class HabitDetailAppBar extends StatelessWidget {
               children: [
                 const SizedBox(height: 32),
                 Icon(
-                  _getCategoryIcon(habit.category),
+                  styleService.getIcon(habit.category),
                   size: 64,
                   color: Colors.white.withValues(alpha: 0.9),
                 ),
@@ -77,34 +79,6 @@ class HabitDetailAppBar extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  Color _getCategoryColor(HabitCategory category) {
-    return switch (category) {
-      HabitCategory.health => Colors.green,
-      HabitCategory.fitness => Colors.orange,
-      HabitCategory.productivity => Colors.blue,
-      HabitCategory.learning => Colors.purple,
-      HabitCategory.mindfulness => Colors.teal,
-      HabitCategory.social => Colors.pink,
-      HabitCategory.creativity => Colors.amber,
-      HabitCategory.finance => Colors.indigo,
-      HabitCategory.other => Colors.grey,
-    };
-  }
-
-  IconData _getCategoryIcon(HabitCategory category) {
-    return switch (category) {
-      HabitCategory.health => Icons.favorite,
-      HabitCategory.fitness => Icons.fitness_center,
-      HabitCategory.productivity => Icons.work,
-      HabitCategory.learning => Icons.school,
-      HabitCategory.mindfulness => Icons.self_improvement,
-      HabitCategory.social => Icons.people,
-      HabitCategory.creativity => Icons.palette,
-      HabitCategory.finance => Icons.attach_money,
-      HabitCategory.other => Icons.category,
-    };
   }
 
   String _getFrequencyText() {

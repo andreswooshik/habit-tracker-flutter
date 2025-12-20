@@ -29,14 +29,17 @@ class QuickStatsGrid extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.1,
-          children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
+            return GridView.count(
+              crossAxisCount: crossAxisCount,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.1,
+              children: [
             StatsCard(
               icon: Icons.list_alt,
               title: 'Total Habits',
@@ -66,6 +69,8 @@ class QuickStatsGrid extends ConsumerWidget {
               subtitle: 'This period',
             ),
           ],
+            );
+          },
         ),
       ],
     );

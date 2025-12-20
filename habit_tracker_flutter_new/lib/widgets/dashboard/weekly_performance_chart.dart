@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
+import 'package:habit_tracker_flutter_new/models/habit_state.dart';
+import 'package:habit_tracker_flutter_new/providers/completions_notifier.dart';
 import 'package:intl/intl.dart';
 
 class WeeklyPerformanceChart extends ConsumerWidget {
@@ -9,13 +11,31 @@ class WeeklyPerformanceChart extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedDate = ref.watch(selectedDateProvider);
+    final habitState = ref.watch(habitsProvider);
+    final completionsState = ref.watch(completionsProvider);
+    
+    // Show loading indicator while data is being loaded
+    if (completionsState.isLoading || habitState.isLoading) {
+      return const Card(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(40),
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+    
+    // Use today as the end date for weekly performance
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
 
     // Calculate last 7 days data
-    final weekData = _calculateWeekData(ref, selectedDate);
+    final weekData = _calculateWeekData(habitState, completionsState, today);
     final previousWeekData = _calculateWeekData(
-      ref,
-      selectedDate.subtract(const Duration(days: 7)),
+      habitState,
+      completionsState,
+      today.subtract(const Duration(days: 7)),
     );
 
     final currentAvg = weekData.fold<double>(
@@ -76,16 +96,7 @@ class WeeklyPerformanceChart extends ConsumerWidget {
                         );
                       },
                     ),
-                    touchCallback: (event, response) {
-                      if (event.isInterestedForInteractions &&
-                          response != null &&
-                          response.spot != null) {
-                        final index = response.spot!.touchedBarGroupIndex;
-                        final data = weekData[index];
-                        ref.read(selectedDateProvider.notifier).state =
-                            data.date;
-                      }
-                    },
+                    touchCallback: null, // Disabled to prevent changing Today's Progress
                   ),
                   titlesData: FlTitlesData(
                     show: true,
@@ -218,9 +229,11 @@ class WeeklyPerformanceChart extends ConsumerWidget {
     return Colors.red;
   }
 
-  List<_DayData> _calculateWeekData(WidgetRef ref, DateTime endDate) {
-    final habitState = ref.read(habitsProvider);
-    final completionsState = ref.read(completionsProvider);
+  List<_DayData> _calculateWeekData(
+    HabitState habitState,
+    CompletionsState completionsState,
+    DateTime endDate,
+  ) {
     final allHabits = habitState.habits.where((h) => !h.isArchived).toList();
 
     final weekData = <_DayData>[];

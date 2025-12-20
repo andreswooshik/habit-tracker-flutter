@@ -118,6 +118,7 @@ class _BounceAnimationState extends State<BounceAnimation>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+  bool _hasAnimated = false;
 
   @override
   void initState() {
@@ -130,16 +131,26 @@ class _BounceAnimationState extends State<BounceAnimation>
     // Bounce curve: scale up then down
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.3)
+        tween: Tween<double>(begin: 1.0, end: 1.2)
             .chain(CurveTween(curve: Curves.easeOut)),
-        weight: 50,
+        weight: 40,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.3, end: 1.0)
+        tween: Tween<double>(begin: 1.2, end: 1.0)
             .chain(CurveTween(curve: Curves.elasticOut)),
-        weight: 50,
+        weight: 60,
       ),
     ]).animate(_controller);
+
+    // Trigger animation if shouldAnimate is true on init
+    if (widget.shouldAnimate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_hasAnimated) {
+          _controller.forward(from: 0.0);
+          _hasAnimated = true;
+        }
+      });
+    }
   }
 
   @override
@@ -148,7 +159,16 @@ class _BounceAnimationState extends State<BounceAnimation>
 
     // Trigger animation when shouldAnimate changes to true
     if (widget.shouldAnimate && !oldWidget.shouldAnimate) {
-      _controller.forward(from: 0.0);
+      _controller.forward(from: 0.0).then((_) {
+        if (mounted) {
+          setState(() => _hasAnimated = true);
+        }
+      });
+    }
+    
+    // Reset flag when shouldAnimate becomes false
+    if (!widget.shouldAnimate && oldWidget.shouldAnimate) {
+      _hasAnimated = false;
     }
   }
 

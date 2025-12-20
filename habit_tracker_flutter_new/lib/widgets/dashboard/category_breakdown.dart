@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
+import 'package:habit_tracker_flutter_new/services/category_style_service.dart';
 
 class CategoryBreakdown extends ConsumerWidget {
   const CategoryBreakdown({super.key});
@@ -35,12 +36,13 @@ class CategoryBreakdown extends ConsumerWidget {
       return _buildEmptyState(context);
     }
 
+    final styleService = CategoryStyleService();
     final sections = categoryData.entries.map((entry) {
       final data = entry.value;
       return PieChartSectionData(
         value: data.completionCount.toDouble(),
         title: '${data.habitCount}',
-        color: _getCategoryColor(data.category),
+        color: styleService.getColor(data.category),
         radius: 60,
         titleStyle: const TextStyle(
           fontSize: 14,
@@ -114,13 +116,14 @@ class CategoryBreakdown extends ConsumerWidget {
     int habitCount,
     int completions,
   ) {
+    final color = CategoryStyleService().getColor(category);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: _getCategoryColor(category).withValues(alpha: 0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _getCategoryColor(category).withValues(alpha: 0.3),
+          color: color.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -130,7 +133,7 @@ class CategoryBreakdown extends ConsumerWidget {
             width: 12,
             height: 12,
             decoration: BoxDecoration(
-              color: _getCategoryColor(category),
+              color: color,
               shape: BoxShape.circle,
             ),
           ),
@@ -194,19 +197,6 @@ class CategoryBreakdown extends ConsumerWidget {
     );
   }
 
-  Color _getCategoryColor(HabitCategory category) {
-    return switch (category) {
-      HabitCategory.health => Colors.green,
-      HabitCategory.fitness => Colors.orange,
-      HabitCategory.productivity => Colors.blue,
-      HabitCategory.learning => Colors.purple,
-      HabitCategory.mindfulness => Colors.teal,
-      HabitCategory.social => Colors.pink,
-      HabitCategory.creativity => Colors.amber,
-      HabitCategory.finance => Colors.indigo,
-      HabitCategory.other => Colors.grey,
-    };
-  }
 }
 
 class _CategoryData {

@@ -22,7 +22,7 @@ class HabitDetailScreen extends ConsumerWidget {
     final previousStreak = ref.watch(habitStreakProvider(habit.id)).current;
 
     return Hero(
-      tag: 'habit_${habit.id}_${selectedDate.millisecondsSinceEpoch}',
+      tag: 'habit_card_${habit.id}',
       child: StreakMilestoneCelebration(
         currentStreak: streakData.current,
         previousStreak: previousStreak - 1, // Simulate previous for celebration
