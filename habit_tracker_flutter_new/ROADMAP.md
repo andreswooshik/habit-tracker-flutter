@@ -8,9 +8,9 @@
 
 ```
 Phase 1-5:  ████████████████████ 100% (Merged to main)
-Phase 6:    ████████████░░░░░░░░  60% (Parts 1 & 2 complete, PR ready)
+Phase 6:    ████████████████████ 100% (PR created - refactoring complete)
 Phase 7:    ░░░░░░░░░░░░░░░░░░░░   0% (Not started)
-Phase 8:    ░░░░░░░░░░░░░░░░░░░░   0% (Not started)
+Phase 8:    ██░░░░░░░░░░░░░░░░░░  10% (In Progress - branch created)
 Phase 9:    ░░░░░░░░░░░░░░░░░░░░   0% (Not started)
 Phase 10:   ░░░░░░░░░░░░░░░░░░░░   0% (Not started)
 Phase 11:   ░░░░░░░░░░░░░░░░░░░░   0% (Not started)
@@ -19,7 +19,7 @@ Phase 13:   ░░░░░░░░░░░░░░░░░░░░   0% (N
 Phase 14:   ░░░░░░░░░░░░░░░░░░░░   0% (Not started)
 Phase 15:   ░░░░░░░░░░░░░░░░░░░░   0% (Future enhancements)
 
-Overall Progress: ██████░░░░░░░░░░░░░░  30% Complete
+Overall Progress: ███████░░░░░░░░░░░░░  35% Complete
 ```
 
 **Current Status:** 281 tests passing, all core functionality implemented
@@ -97,8 +97,8 @@ Overall Progress: ██████░░░░░░░░░░░░░░  
 
 ---
 
-### Phase 6: UI Components (Partial)
-**Status:** 🚧 60% Complete (PR ready)
+### Phase 6: UI Components & Code Refactoring
+**Status:** ✅ 100% Complete (PR created)
 
 **Completed:**
 - ✅ **HabitListScreen** - Main screen with date navigation
@@ -125,13 +125,24 @@ Overall Progress: ██████░░░░░░░░░░░░░░  
   - Loading states and success feedback
   - Strava-inspired design
 
-**Remaining:**
-- ⏳ **HabitDetailScreen** (Phase 6.3)
+- ✅ **Code Refactoring & Quality**
+  - Applied SOLID principles
+  - Created Responsive utility class
+  - Created AppConstants for centralized configuration
+  - Created AppTheme for theme management
+  - Fixed all 40 linter issues (100% improvement)
+  - Updated deprecated APIs
+  - Removed unused code
+  - 281 tests passing
 
 **Files:**
 - `lib/screens/habit_list_screen.dart`
 - `lib/widgets/habit_card.dart`
 - `lib/screens/add_edit_habit_screen.dart`
+- `lib/utils/responsive.dart`
+- `lib/utils/app_constants.dart`
+- `lib/config/app_theme.dart`
+- `REFACTORING_SUMMARY.md`
 
 ---
 
@@ -236,7 +247,7 @@ Overall Progress: ██████░░░░░░░░░░░░░░  
 - Chart library: fl_chart or similar
 - Responsive grid layout
 - Pull-to-refresh functionality
-
+🚧 In Progress (Branch: feature/phase8-analytics-insights)
 **Design Inspiration:**
 - Strava-style activity feed
 - Apple Health dashboard
@@ -295,7 +306,7 @@ Overall Progress: ██████░░░░░░░░░░░░░░  
 
 ---
 
-### Phase 9: Settings & Preferences
+### Phase 9: Settings & Preferences // to be completed by reiner
 **Priority:** 🟡 Medium  
 **Estimated Effort:** 300 lines + 80 lines tests  
 **Status:** Not Started
@@ -532,6 +543,6 @@ Overall Progress: ██████░░░░░░░░░░░░░░  
 
 ---
 
-**Last Updated:** December 19, 2025  
-**Current Phase:** 6 (60% complete)  
-**Next Milestone:** Complete Phase 6.3 (Habit Detail Screen)
+**Last Updated:** December 20, 2025  
+**Current Phase:** 8 (10% complete)  
+**Next Milestone:** Complete Phase 8 (Analytics & Insights Screen)
