@@ -7,28 +7,6 @@ import 'package:habit_tracker_flutter_new/repositories/hive/hive_habits_reposito
 import 'package:habit_tracker_flutter_new/repositories/hive/hive_completions_repository.dart';
 import 'package:habit_tracker_flutter_new/services/mock_data_loader.dart';
 
-// ============================================================================
-// 🎛️ FEATURE FLAG - DEMO MODE CONTROL
-// ============================================================================
-/// Feature flag to control whether the app loads mock data on first run.
-///
-/// **DEMO MODE (true):**
-/// - Loads 8 sample habits with 60 days of realistic completion history
-/// - Features streak patterns, weekend effects, and motivation decay
-/// - Includes habit descriptions and varied categories
-/// - Perfect for demos, evaluations, and testing
-/// - Data persists in Hive until manually cleared
-/// - App title shows "TrackIt! (DEMO)"
-///
-/// **PRODUCTION MODE (false):**
-/// - Starts with empty database
-/// - Normal production behavior
-/// - App title shows "TrackIt!"
-///
-/// **To switch modes:**
-/// 1. Change this flag to `true` or `false`
-/// 2. Run: `flutter clean && flutter run`
-/// 3. This clears Hive and restarts fresh
 const bool useMockData = true; // 👈 Change this to toggle demo/production mode
 // ============================================================================
 
