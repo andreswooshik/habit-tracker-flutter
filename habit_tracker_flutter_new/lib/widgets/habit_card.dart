@@ -85,7 +85,7 @@ class HabitCard extends ConsumerWidget {
                 Expanded(
                   child: _buildHabitInfo(context, isCompleted),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 _StreakBadge(habitId: habit.id),
               ],
             ),
@@ -174,12 +174,14 @@ class HabitCard extends ConsumerWidget {
           habit.name,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                decoration: isCompleted ? TextDecoration.lineThrough : null,
-                color: isCompleted ? Colors.grey : null,
               ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 6),
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
           children: [
             _buildInfoChip(
               context,
@@ -187,7 +189,6 @@ class HabitCard extends ConsumerWidget {
               label: habit.category.displayName,
               color: _getCategoryColor(habit.category),
             ),
-            const SizedBox(width: 8),
             _buildInfoChip(
               context,
               icon: Icons.repeat,
