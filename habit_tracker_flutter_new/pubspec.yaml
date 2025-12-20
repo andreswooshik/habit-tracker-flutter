@@ -45,6 +45,11 @@ dependencies:
   
   # Charts
   fl_chart: ^0.69.0         # Beautiful charts for analytics and dashboards
+  
+  # Data Persistence
+  hive: ^2.2.3              # Fast key-value database
+  hive_flutter: ^1.1.0      # Flutter extensions for Hive
+  path_provider: ^2.1.1     # Get application directory paths
 
 dev_dependencies:
   flutter_test:

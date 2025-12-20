@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../repositories/interfaces/i_completions_repository.dart';
+import '../main.dart' show completionsRepositoryProvider;
 
 /// Immutable state container for habit completions
 /// 
@@ -103,7 +105,25 @@ class CompletionsState {
 /// 
 /// All dates are normalized to remove time components for consistent comparisons.
 class CompletionsNotifier extends StateNotifier<CompletionsState> {
-  CompletionsNotifier() : super(CompletionsState.initial());
+  final ICompletionsRepository _repository;
+  
+  CompletionsNotifier(this._repository) : super(CompletionsState.initial()) {
+    _loadCompletionsFromRepository();
+  }
+
+  /// Loads completions from repository on initialization
+  Future<void> _loadCompletionsFromRepository() async {
+    try {
+      final completions = await _repository.loadCompletions();
+      state = CompletionsState(
+        completions: completions,
+        isLoading: false,
+        errorMessage: null,
+      );
+    } catch (e) {
+      state = CompletionsState.error('Failed to load completions: ${e.toString()}');
+    }
+  }
 
   /// Normalizes a date by removing the time component
   DateTime _normalizeDate(DateTime date) {
@@ -115,7 +135,7 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   /// If the habit is completed on the date, it marks it incomplete.
   /// If the habit is not completed on the date, it marks it complete.
   /// Returns the new completion status (true if now complete, false if now incomplete).
-  bool toggleCompletion(String habitId, DateTime date) {
+  Future<bool> toggleCompletion(String habitId, DateTime date) async {
     try {
       if (habitId.isEmpty) {
         state = state.copyWith(errorMessage: 'Habit ID cannot be empty');
@@ -134,8 +154,10 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
       final wasCompleted = habitCompletions.contains(normalizedDate);
       if (wasCompleted) {
         habitCompletions.remove(normalizedDate);
+        await _repository.removeCompletion(habitId, normalizedDate);
       } else {
         habitCompletions.add(normalizedDate);
+        await _repository.addCompletion(habitId, normalizedDate);
       }
 
       // Update the completions map
@@ -163,7 +185,7 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   /// Marks a habit as complete on a specific date
   /// 
   /// Returns true if successful, false otherwise.
-  bool markComplete(String habitId, DateTime date) {
+  Future<bool> markComplete(String habitId, DateTime date) async {
     try {
       if (habitId.isEmpty) {
         state = state.copyWith(errorMessage: 'Habit ID cannot be empty');
@@ -181,6 +203,9 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
       // Add the completion (set handles duplicates automatically)
       habitCompletions.add(normalizedDate);
       currentCompletions[habitId] = habitCompletions;
+
+      // Save to repository
+      await _repository.addCompletion(habitId, normalizedDate);
 
       state = CompletionsState(
         completions: currentCompletions,
@@ -200,7 +225,7 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   /// Marks a habit as incomplete on a specific date
   /// 
   /// Returns true if successful, false otherwise.
-  bool markIncomplete(String habitId, DateTime date) {
+  Future<bool> markIncomplete(String habitId, DateTime date) async {
     try {
       if (habitId.isEmpty) {
         state = state.copyWith(errorMessage: 'Habit ID cannot be empty');
@@ -220,6 +245,9 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
       // Remove the completion
       final updatedCompletions = Set<DateTime>.from(habitCompletions);
       updatedCompletions.remove(normalizedDate);
+
+      // Remove from repository
+      await _repository.removeCompletion(habitId, normalizedDate);
 
       // Update or remove the habit's completions
       if (updatedCompletions.isEmpty) {
@@ -247,7 +275,7 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   /// 
   /// This is more efficient than calling markComplete multiple times.
   /// Returns the number of dates successfully marked complete.
-  int bulkComplete(String habitId, List<DateTime> dates) {
+  Future<int> bulkComplete(String habitId, List<DateTime> dates) async {
     try {
       if (habitId.isEmpty) {
         state = state.copyWith(errorMessage: 'Habit ID cannot be empty');
@@ -270,6 +298,11 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
       habitCompletions.addAll(normalizedDates);
       currentCompletions[habitId] = habitCompletions;
 
+      // Save each to repository
+      for (final date in normalizedDates) {
+        await _repository.addCompletion(habitId, date);
+      }
+
       state = CompletionsState(
         completions: currentCompletions,
         isLoading: false,
@@ -289,7 +322,7 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   /// 
   /// This is more efficient than calling markIncomplete multiple times.
   /// Returns the number of dates successfully marked incomplete.
-  int bulkIncomplete(String habitId, List<DateTime> dates) {
+  Future<int> bulkIncomplete(String habitId, List<DateTime> dates) async {
     try {
       if (habitId.isEmpty) {
         state = state.copyWith(errorMessage: 'Habit ID cannot be empty');
@@ -313,6 +346,11 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
       // Remove all dates from the set
       final updatedCompletions = Set<DateTime>.from(habitCompletions);
       final removedCount = normalizedDates.where(updatedCompletions.remove).length;
+
+      // Remove each from repository
+      for (final date in normalizedDates) {
+        await _repository.removeCompletion(habitId, date);
+      }
 
       // Update or remove the habit's completions
       if (updatedCompletions.isEmpty) {
@@ -339,10 +377,13 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   /// Removes all completions for a specific habit
   /// 
   /// Useful when a habit is deleted.
-  void removeHabitCompletions(String habitId) {
+  Future<void> removeHabitCompletions(String habitId) async {
     try {
       final currentCompletions = Map<String, Set<DateTime>>.from(state.completions);
       currentCompletions.remove(habitId);
+
+      // Delete from repository
+      await _repository.deleteCompletionsForHabit(habitId);
 
       state = CompletionsState(
         completions: currentCompletions,
@@ -379,7 +420,8 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
   }
 
   /// Clears all completions (use with caution)
-  void clearAllCompletions() {
+  Future<void> clearAllCompletions() async {
+    await _repository.clearAll();
     state = CompletionsState.initial();
   }
 
@@ -400,5 +442,6 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
 /// This is the single source of truth for completion data in the application.
 /// Use this provider throughout the app to access and modify completion data.
 final completionsProvider = StateNotifierProvider<CompletionsNotifier, CompletionsState>((ref) {
-  return CompletionsNotifier();
+  final repository = ref.watch(completionsRepositoryProvider);
+  return CompletionsNotifier(repository);
 });

@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker_flutter_new/providers/completions_notifier.dart';
+import '../mocks/mock_completions_repository.dart';
 
 void main() {
   group('CompletionsNotifier -', () {
     late CompletionsNotifier notifier;
+    late MockCompletionsRepository mockRepository;
     late String testHabitId1;
     late String testHabitId2;
     late DateTime testDate1;
@@ -11,7 +13,8 @@ void main() {
     late DateTime testDate3;
 
     setUp(() {
-      notifier = CompletionsNotifier();
+      mockRepository = MockCompletionsRepository();
+      notifier = CompletionsNotifier(mockRepository);
       testHabitId1 = 'habit-1';
       testHabitId2 = 'habit-2';
       testDate1 = DateTime(2025, 12, 17);
