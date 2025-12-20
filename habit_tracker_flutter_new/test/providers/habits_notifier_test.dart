@@ -3,15 +3,18 @@ import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/models/habit_frequency.dart';
 import 'package:habit_tracker_flutter_new/providers/habits_notifier.dart';
+import '../mocks/mock_habits_repository.dart';
 
 void main() {
   group('HabitsNotifier -', () {
     late HabitsNotifier notifier;
+    late MockHabitsRepository mockRepository;
     late Habit testHabit1;
     late Habit testHabit2;
 
     setUp(() {
-      notifier = HabitsNotifier();
+      mockRepository = MockHabitsRepository();
+      notifier = HabitsNotifier(mockRepository);
       
       testHabit1 = Habit.create(
         id: 'habit-1',

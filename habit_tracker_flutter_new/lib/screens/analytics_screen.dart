@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habit_tracker_flutter_new/providers/analytics_providers.dart';
 import 'package:habit_tracker_flutter_new/utils/app_constants.dart';
 import 'package:habit_tracker_flutter_new/widgets/analytics/time_range_selector.dart';
 import 'package:habit_tracker_flutter_new/widgets/analytics/completion_rate_chart.dart';

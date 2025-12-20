@@ -11,9 +11,9 @@ class TimeRangeSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedRange = ref.watch(selectedTimeRangeProvider);
-    
+
     return Card(
-      elevation: AppConstants.elevationLow,
+      elevation: AppConstants.cardElevationLow,
       child: Padding(
         padding: EdgeInsets.all(AppConstants.paddingSmall),
         child: Row(
