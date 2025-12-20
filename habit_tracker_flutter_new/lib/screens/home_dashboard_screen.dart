@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/screens/habit_list_screen.dart';
+import 'package:habit_tracker_flutter_new/screens/analytics_screen.dart';
 import 'package:habit_tracker_flutter_new/widgets/dashboard/dashboard.dart';
 
 class HomeDashboardScreen extends ConsumerWidget {
@@ -13,6 +14,11 @@ class HomeDashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('TrackIt!'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.analytics),
+            onPressed: () => _navigateToAnalytics(context),
+            tooltip: 'Analytics',
+          ),
           IconButton(
             icon: const Icon(Icons.calendar_today),
             onPressed: () => _navigateToHabitList(context),
@@ -73,6 +79,14 @@ class HomeDashboardScreen extends ConsumerWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const HabitListScreen(),
+      ),
+    );
+  }
+
+  void _navigateToAnalytics(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AnalyticsScreen(),
       ),
     );
   }
