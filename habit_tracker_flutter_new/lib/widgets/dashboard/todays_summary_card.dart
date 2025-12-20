@@ -10,8 +10,6 @@ class TodaysSummaryCard extends ConsumerWidget {
     final todaysProgress = ref.watch(todaysProgressProvider);
     final completedCount = ref.watch(completedTodayCountProvider);
     final totalCount = ref.watch(todaysHabitsCountProvider);
-    final todaysHabits = ref.watch(todaysHabitsProvider);
-    final selectedDate = ref.watch(selectedDateProvider);
 
     final greeting = _getGreeting();
     final progressPercentage = (todaysProgress * 100).toInt();
@@ -156,7 +154,6 @@ class TodaysSummaryCard extends ConsumerWidget {
                           ),
                         ],
                       ),
-
                     ],
                   ),
                 ),
@@ -169,7 +166,8 @@ class TodaysSummaryCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _getMotivationalColor(todaysProgress).withValues(alpha: 0.1),
+                  color: _getMotivationalColor(todaysProgress)
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(

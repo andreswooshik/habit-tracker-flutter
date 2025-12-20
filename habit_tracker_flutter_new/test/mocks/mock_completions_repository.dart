@@ -1,9 +1,8 @@
-import 'package:habit_tracker_flutter_new/models/adapters/completion_record.dart';
 import 'package:habit_tracker_flutter_new/repositories/interfaces/i_completions_repository.dart';
 
 /// Mock implementation of ICompletionsRepository for testing
 class MockCompletionsRepository implements ICompletionsRepository {
-  final Map<String, CompletionRecord> _completions = {};
+  final Map<String, Set<DateTime>> _completions = {};
   bool _isInitialized = false;
 
   @override
@@ -12,31 +11,30 @@ class MockCompletionsRepository implements ICompletionsRepository {
   }
 
   @override
-  Future<List<CompletionRecord>> loadCompletions() async {
-    return _completions.values.toList();
+  Future<Map<String, Set<DateTime>>> loadCompletions() async {
+    return Map.from(_completions);
   }
 
   @override
-  Future<void> addCompletion(CompletionRecord completion) async {
-    final key = '${completion.habitId}_${completion.completedAt.millisecondsSinceEpoch}';
-    _completions[key] = completion;
+  Future<void> addCompletion(String habitId, DateTime date) async {
+    final normalizedDate = DateTime(date.year, date.month, date.day);
+    _completions.putIfAbsent(habitId, () => {}).add(normalizedDate);
   }
 
   @override
   Future<void> removeCompletion(String habitId, DateTime date) async {
     final normalizedDate = DateTime(date.year, date.month, date.day);
-    final key = '${habitId}_${normalizedDate.millisecondsSinceEpoch}';
-    _completions.remove(key);
+    _completions[habitId]?.remove(normalizedDate);
   }
 
   @override
-  Future<List<CompletionRecord>> getCompletionsForHabit(String habitId) async {
-    return _completions.values.where((c) => c.habitId == habitId).toList();
+  Future<Set<DateTime>> getCompletionsForHabit(String habitId) async {
+    return _completions[habitId] ?? {};
   }
 
   @override
   Future<void> deleteCompletionsForHabit(String habitId) async {
-    _completions.removeWhere((key, completion) => completion.habitId == habitId);
+    _completions.remove(habitId);
   }
 
   @override

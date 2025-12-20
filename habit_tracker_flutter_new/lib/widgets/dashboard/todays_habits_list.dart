@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/widgets/habit_card.dart';
+import 'package:habit_tracker_flutter_new/widgets/animations/animations.dart';
 
 /// Widget that displays the list of habits scheduled for today
 class TodaysHabitsList extends ConsumerWidget {
@@ -64,124 +65,133 @@ class TodaysHabitsList extends ConsumerWidget {
       return isCompleted;
     }).toList();
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                Icon(
-                  Icons.format_list_bulleted,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 28,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Today\'s Habits',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+    // Check if all habits are completed
+    final allCompleted = pendingHabits.isEmpty && completedHabits.isNotEmpty;
+
+    return ConfettiCelebration(
+      shouldPlay: allCompleted,
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Icon(
+                    Icons.format_list_bulleted,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Today\'s Habits',
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '$completedCount of $totalCount completed',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey.shade600,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // Pending Habits Section
+              if (pendingHabits.isNotEmpty) ...[
+                Text(
+                  'To Complete (${pendingHabits.length})',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.orange.shade700,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '$completedCount of $totalCount completed',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey.shade600,
-                            ),
+                ),
+                const SizedBox(height: 12),
+                ...pendingHabits.map((habit) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: HabitCard(
+                        habit: habit,
+                        selectedDate: selectedDate,
+                      ),
+                    )),
+                const SizedBox(height: 16),
+              ],
+
+              // Completed Habits Section
+              if (completedHabits.isNotEmpty) ...[
+                Text(
+                  'Completed (${completedHabits.length})',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.green.shade700,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                ...completedHabits.map((habit) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: HabitCard(
+                        habit: habit,
+                        selectedDate: selectedDate,
+                      ),
+                    )),
+              ],
+
+              // All completed message
+              if (pendingHabits.isEmpty && completedHabits.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.green.shade200,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.celebration,
+                        color: Colors.green.shade700,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '🎉 Perfect! All habits completed today!',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.green.shade900,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // Pending Habits Section
-            if (pendingHabits.isNotEmpty) ...[
-              Text(
-                'To Complete (${pendingHabits.length})',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.orange.shade700,
-                    ),
-              ),
-              const SizedBox(height: 12),
-              ...pendingHabits.map((habit) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: HabitCard(
-                      habit: habit,
-                      selectedDate: selectedDate,
-                    ),
-                  )),
-              const SizedBox(height: 16),
             ],
-
-            // Completed Habits Section
-            if (completedHabits.isNotEmpty) ...[
-              Text(
-                'Completed (${completedHabits.length})',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.green.shade700,
-                    ),
-              ),
-              const SizedBox(height: 12),
-              ...completedHabits.map((habit) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: HabitCard(
-                      habit: habit,
-                      selectedDate: selectedDate,
-                    ),
-                  )),
-            ],
-
-            // All completed message
-            if (pendingHabits.isEmpty && completedHabits.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.green.shade200,
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.celebration,
-                      color: Colors.green.shade700,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        '🎉 Perfect! All habits completed today!',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.green.shade900,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );

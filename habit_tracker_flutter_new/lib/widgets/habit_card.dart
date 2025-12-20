@@ -6,6 +6,7 @@ import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/services/services.dart';
 import 'package:habit_tracker_flutter_new/screens/add_edit_habit_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/habit_detail_screen.dart';
+import 'package:habit_tracker_flutter_new/widgets/animations/animations.dart';
 
 class HabitCard extends ConsumerWidget {
   final Habit habit;
@@ -60,34 +61,40 @@ class HabitCard extends ConsumerWidget {
           _handleDelete(ref);
         }
       },
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 12),
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: isCompleted
-                ? Colors.green.withValues(alpha: 0.3)
-                : Colors.grey.withValues(alpha: 0.2),
-            width: 1,
-          ),
-        ),
-        child: InkWell(
-          onTap: onTap ?? () => _navigateToDetail(context),
-          onLongPress: () => _handleEdit(context, ref),
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                _buildCompletionCheckbox(context, ref, isCompleted),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildHabitInfo(context, isCompleted),
+      child: Hero(
+        tag: 'habit_${habit.id}',
+        child: Material(
+          type: MaterialType.transparency,
+          child: Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: isCompleted
+                    ? Colors.green.withValues(alpha: 0.3)
+                    : Colors.grey.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: InkWell(
+              onTap: onTap ?? () => _navigateToDetail(context),
+              onLongPress: () => _handleEdit(context, ref),
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    _buildCompletionCheckbox(context, ref, isCompleted),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildHabitInfo(context, isCompleted),
+                    ),
+                    const SizedBox(width: 8),
+                    _StreakBadge(habitId: habit.id),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                _StreakBadge(habitId: habit.id),
-              ],
+              ),
             ),
           ),
         ),
@@ -134,34 +141,37 @@ class HabitCard extends ConsumerWidget {
   ) {
     return GestureDetector(
       onTap: () => _toggleCompletion(ref, isCompleted),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isCompleted ? Colors.green : Colors.grey.shade400,
-            width: 2.5,
+      child: BounceAnimation(
+        shouldAnimate: isCompleted,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isCompleted ? Colors.green : Colors.grey.shade400,
+              width: 2.5,
+            ),
+            color: isCompleted ? Colors.green : Colors.transparent,
+            boxShadow: isCompleted
+                ? [
+                    BoxShadow(
+                      color: Colors.green.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : null,
           ),
-          color: isCompleted ? Colors.green : Colors.transparent,
-          boxShadow: isCompleted
-              ? [
-                  BoxShadow(
-                    color: Colors.green.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                  ),
-                ]
+          child: isCompleted
+              ? const Icon(
+                  Icons.check,
+                  size: 20,
+                  color: Colors.white,
+                )
               : null,
         ),
-        child: isCompleted
-            ? const Icon(
-                Icons.check,
-                size: 20,
-                color: Colors.white,
-              )
-            : null,
       ),
     );
   }

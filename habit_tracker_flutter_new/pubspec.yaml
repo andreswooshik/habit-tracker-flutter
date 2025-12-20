@@ -46,6 +46,9 @@ dependencies:
   # Charts
   fl_chart: ^0.69.0         # Beautiful charts for analytics and dashboards
   
+  # Animations
+  confetti: ^0.7.0          # Confetti celebration animations
+  
   # Data Persistence
   hive: ^2.2.3              # Fast key-value database
   hive_flutter: ^1.1.0      # Flutter extensions for Hive
