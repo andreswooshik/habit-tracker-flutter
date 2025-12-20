@@ -64,8 +64,8 @@ class HomeDashboardScreen extends ConsumerWidget {
 
               const SizedBox(height: 20),
 
-              // Category Breakdown
-              const CategoryBreakdown(),
+              // Today's Habits List
+              const TodaysHabitsList(),
 
               const SizedBox(height: 32),
             ],
