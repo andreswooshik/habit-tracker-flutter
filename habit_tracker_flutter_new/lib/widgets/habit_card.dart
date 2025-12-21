@@ -141,13 +141,13 @@ class HabitCard extends ConsumerWidget {
     bool isCompleted,
   ) {
     final isToday = _isToday(selectedDate);
-    final canToggle = isToday ||
-        isCompleted; // Can always unmark, but can only mark complete today
+    // Can only mark complete today, and CANNOT unmark once completed for today
+    final canToggle = isToday && !isCompleted;
 
     return GestureDetector(
       onTap: canToggle
           ? () => _toggleCompletion(ref, isCompleted)
-          : () => _showNotTodayMessage(context),
+          : () => _showCompletionLockedMessage(context, isCompleted, isToday),
       child: Opacity(
         opacity: canToggle ? 1.0 : 0.5,
         child: BounceAnimation(
@@ -253,80 +253,93 @@ class HabitCard extends ConsumerWidget {
   }
 
   void _toggleCompletion(WidgetRef ref, bool isCompleted) async {
-    if (isCompleted) {
-      // Unmark as complete - no confirmation needed
-      ref.read(completionsProvider.notifier).markIncomplete(
-            habit.id,
-            selectedDate,
-          );
-    } else {
-      // Check if the date is today
-      if (!_isToday(selectedDate)) {
-        _showNotTodayMessage(ref.context);
-        return;
-      }
+    // Check if the date is today
+    if (!_isToday(selectedDate)) {
+      _showCompletionLockedMessage(ref.context, isCompleted, false);
+      return;
+    }
 
-      // Show confirmation when marking as complete
-      final context = ref.context;
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (BuildContext dialogContext) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text('Complete Habit?'),
-              ),
-            ],
-          ),
-          content: Text(
-            'Mark "${habit.name}" as completed for today?',
-            style: const TextStyle(fontSize: 16),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
+    // Prevent unchecking completed habits for today
+    if (isCompleted) {
+      _showCompletionLockedMessage(ref.context, isCompleted, true);
+      return;
+    }
+
+    // Show confirmation when marking as complete
+    final context = ref.context;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              Icons.check_circle,
+              color: Colors.green,
+              size: 28,
             ),
-            FilledButton.icon(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              icon: const Icon(Icons.check, size: 20),
-              label: const Text('Complete'),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text('Complete Habit?'),
             ),
           ],
         ),
-      );
+        content: Text(
+          'Mark "${habit.name}" as completed for today?',
+          style: const TextStyle(fontSize: 16),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            icon: const Icon(Icons.check, size: 20),
+            label: const Text('Complete'),
+          ),
+        ],
+      ),
+    );
 
-      if (confirmed == true) {
-        ref.read(completionsProvider.notifier).markComplete(
-              habit.id,
-              selectedDate,
-            );
-      }
+    if (confirmed == true) {
+      ref.read(completionsProvider.notifier).markComplete(
+            habit.id,
+            selectedDate,
+          );
     }
   }
 
-  void _showNotTodayMessage(BuildContext context) {
+  void _showCompletionLockedMessage(
+      BuildContext context, bool isCompleted, bool isToday) {
+    String message;
+    IconData icon;
+    Color backgroundColor;
+
+    if (isCompleted && isToday) {
+      message = 'Completed habits cannot be unchecked for today';
+      icon = Icons.lock;
+      backgroundColor = Colors.blue.shade700;
+    } else {
+      message = 'Habits can only be marked complete for today';
+      icon = Icons.info_outline;
+      backgroundColor = Colors.orange.shade700;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.info_outline, color: Colors.white),
+            Icon(icon, color: Colors.white),
             const SizedBox(width: 12),
-            const Expanded(
-              child: Text('Habits can only be marked complete for today'),
+            Expanded(
+              child: Text(message),
             ),
           ],
         ),
-        backgroundColor: Colors.orange.shade700,
+        backgroundColor: backgroundColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -394,7 +407,6 @@ class HabitCard extends ConsumerWidget {
       ref.read(habitsProvider.notifier).deleteHabit(habit.id);
     }
   }
-
 }
 
 /// Streak badge showing current streak with Strava-style visual feedback

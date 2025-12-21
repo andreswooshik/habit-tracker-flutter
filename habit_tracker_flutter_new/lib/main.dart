@@ -7,7 +7,7 @@ import 'package:habit_tracker_flutter_new/repositories/hive/hive_habits_reposito
 import 'package:habit_tracker_flutter_new/repositories/hive/hive_completions_repository.dart';
 import 'package:habit_tracker_flutter_new/services/mock_data_loader.dart';
 
-const bool useMockData = true; // 👈 Change this to toggle demo/production mode
+const bool useMockData = false; // 👈 Change this to toggle demo/production mode
 // ============================================================================
 
 void main() async {

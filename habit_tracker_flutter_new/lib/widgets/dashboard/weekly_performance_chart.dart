@@ -13,7 +13,7 @@ class WeeklyPerformanceChart extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final habitState = ref.watch(habitsProvider);
     final completionsState = ref.watch(completionsProvider);
-    
+
     // Show loading indicator while data is being loaded
     if (completionsState.isLoading || habitState.isLoading) {
       return const Card(
@@ -25,7 +25,7 @@ class WeeklyPerformanceChart extends ConsumerWidget {
         ),
       );
     }
-    
+
     // Use today as the end date for weekly performance
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -96,7 +96,8 @@ class WeeklyPerformanceChart extends ConsumerWidget {
                         );
                       },
                     ),
-                    touchCallback: null, // Disabled to prevent changing Today's Progress
+                    touchCallback:
+                        null, // Disabled to prevent changing Today's Progress
                   ),
                   titlesData: FlTitlesData(
                     show: true,
@@ -192,9 +193,13 @@ class WeeklyPerformanceChart extends ConsumerWidget {
 
   Widget _buildTrendIndicator(BuildContext context, double trend) {
     final isPositive = trend >= 0;
-    final trendPercentage = (trend * 100).abs().toStringAsFixed(0);
+    // Calculate trend percentage and cap at ±100%
+    final rawTrendPercentage = (trend * 100).abs();
+    final trendPercentage = rawTrendPercentage.clamp(0, 100);
+    final isCapped = rawTrendPercentage > 100;
+    final displayPercentage = trendPercentage.toStringAsFixed(0);
 
-    return Container(
+    final widget = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: (isPositive ? Colors.green : Colors.red).withValues(alpha: 0.1),
@@ -210,7 +215,7 @@ class WeeklyPerformanceChart extends ConsumerWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            '$trendPercentage%',
+            '$displayPercentage%${isCapped ? '+' : ''}',
             style: TextStyle(
               color: isPositive ? Colors.green : Colors.red,
               fontWeight: FontWeight.bold,
@@ -220,6 +225,16 @@ class WeeklyPerformanceChart extends ConsumerWidget {
         ],
       ),
     );
+
+    // Add tooltip if value is capped
+    if (isCapped) {
+      return Tooltip(
+        message:
+            'Actual change: ${rawTrendPercentage.toStringAsFixed(0)}% (capped at 100% for display)',
+        child: widget,
+      );
+    }
+    return widget;
   }
 
   Color _getBarColor(double rate) {
