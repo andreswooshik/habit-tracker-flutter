@@ -12,7 +12,7 @@ class ConsistencyTracker extends ConsumerWidget {
     final insights = ref.watch(habitInsightsProvider);
     final completedToday = ref.watch(completedTodayCountProvider);
     final todaysHabits = ref.watch(todaysHabitsProvider);
-    
+
     final totalToday = todaysHabits.length;
     final todayProgress = totalToday > 0 ? completedToday / totalToday : 0.0;
 
@@ -131,7 +131,7 @@ class ConsistencyTracker extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: iconColor.withOpacity(0.1),
+        color: iconColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(

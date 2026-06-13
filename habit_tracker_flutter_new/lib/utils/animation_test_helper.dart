@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Helper class to test and verify animations work correctly
-/// 
+///
 /// Use this in development to ensure all animations trigger properly
 class AnimationTestHelper {
   /// Test bounce animation by toggling state
@@ -76,7 +76,7 @@ class _ConfettiTestState extends State<_ConfettiTest> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              _showConfetti ? '🎉 Celebrating! 🎉' : 'Ready to celebrate',
+              _showConfetti ? 'Celebrating!' : 'Ready to celebrate',
               style: const TextStyle(fontSize: 24),
             ),
             const SizedBox(height: 40),

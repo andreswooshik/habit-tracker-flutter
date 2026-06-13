@@ -2,10 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/habit.dart';
 import '../models/habit_state.dart';
 import '../repositories/interfaces/i_habits_repository.dart';
-import '../main.dart' show habitsRepositoryProvider;
+import 'repository_providers.dart';
 
 /// StateNotifier for managing habits state
-/// 
+///
 /// Implements CRUD operations following SOLID principles:
 /// - Single Responsibility: Only manages habit state
 /// - Open/Closed: Can be extended without modifying existing code
@@ -14,7 +14,7 @@ import '../main.dart' show habitsRepositoryProvider;
 /// - Dependency Inversion: Depends on abstractions (models), not concrete implementations
 class HabitsNotifier extends StateNotifier<HabitState> {
   final IHabitsRepository _repository;
-  
+
   HabitsNotifier(this._repository) : super(HabitState.initial()) {
     _loadHabitsFromRepository();
   }
@@ -30,7 +30,7 @@ class HabitsNotifier extends StateNotifier<HabitState> {
   }
 
   /// Adds a new habit to the state
-  /// 
+  ///
   /// Validates the habit before adding and handles errors gracefully.
   /// Returns true if successful, false otherwise.
   Future<bool> addHabit(Habit habit) async {
@@ -38,7 +38,8 @@ class HabitsNotifier extends StateNotifier<HabitState> {
       // Validate habit
       if (!habit.isValid) {
         state = state.copyWith(
-          errorMessage: 'Invalid habit: Name cannot be empty and target days must be positive',
+          errorMessage:
+              'Invalid habit: Name cannot be empty and target days must be positive',
         );
         return false;
       }
@@ -53,7 +54,7 @@ class HabitsNotifier extends StateNotifier<HabitState> {
 
       // Save to repository first
       await _repository.saveHabit(habit);
-      
+
       // Add the habit using the state's addHabit method
       state = state.addHabit(habit);
       return true;
@@ -66,7 +67,7 @@ class HabitsNotifier extends StateNotifier<HabitState> {
   }
 
   /// Updates an existing habit
-  /// 
+  ///
   /// Validates both the habit ID existence and the updated habit data.
   /// Returns true if successful, false otherwise.
   Future<bool> updateHabit(String id, Habit updatedHabit) async {
@@ -82,7 +83,8 @@ class HabitsNotifier extends StateNotifier<HabitState> {
       // Validate updated habit
       if (!updatedHabit.isValid) {
         state = state.copyWith(
-          errorMessage: 'Invalid habit update: Name cannot be empty and target days must be positive',
+          errorMessage:
+              'Invalid habit update: Name cannot be empty and target days must be positive',
         );
         return false;
       }
@@ -97,7 +99,7 @@ class HabitsNotifier extends StateNotifier<HabitState> {
 
       // Update in repository first
       await _repository.updateHabit(updatedHabit);
-      
+
       // Update the habit using the state's updateHabit method
       state = state.updateHabit(id, updatedHabit);
       return true;
@@ -110,7 +112,7 @@ class HabitsNotifier extends StateNotifier<HabitState> {
   }
 
   /// Deletes a habit permanently
-  /// 
+  ///
   /// This is a hard delete. Consider using archiveHabit() for soft delete.
   /// Returns true if successful, false otherwise.
   Future<bool> deleteHabit(String id) async {
@@ -125,7 +127,7 @@ class HabitsNotifier extends StateNotifier<HabitState> {
 
       // Delete from repository first
       await _repository.deleteHabit(id);
-      
+
       // Remove the habit using the state's removeHabit method
       state = state.removeHabit(id);
       return true;
@@ -138,7 +140,7 @@ class HabitsNotifier extends StateNotifier<HabitState> {
   }
 
   /// Archives a habit (soft delete)
-  /// 
+  ///
   /// Archived habits are not shown in active views but can be unarchived later.
   /// Returns true if successful, false otherwise.
   Future<bool> archiveHabit(String id) async {
@@ -162,7 +164,7 @@ class HabitsNotifier extends StateNotifier<HabitState> {
 
       // Archive in repository first
       await _repository.archiveHabit(id);
-      
+
       // Archive the habit using the state's archiveHabit method
       state = state.archiveHabit(id);
       return true;
@@ -175,7 +177,7 @@ class HabitsNotifier extends StateNotifier<HabitState> {
   }
 
   /// Unarchives a previously archived habit
-  /// 
+  ///
   /// Returns the habit to active status.
   /// Returns true if successful, false otherwise.
   Future<bool> unarchiveHabit(String id) async {
@@ -200,7 +202,7 @@ class HabitsNotifier extends StateNotifier<HabitState> {
       // Unarchive in repository
       final unarchivedHabit = habit.copyWith(isArchived: false);
       await _repository.updateHabit(unarchivedHabit);
-      
+
       // Unarchive the habit using the state's unarchiveHabit method
       state = state.unarchiveHabit(id);
       return true;
@@ -241,11 +243,10 @@ class HabitsNotifier extends StateNotifier<HabitState> {
 }
 
 /// Global provider for HabitsNotifier
-/// 
+///
 /// This is the single source of truth for habit state in the application.
 /// Use this provider throughout the app to access and modify habit data.
 final habitsProvider = StateNotifierProvider<HabitsNotifier, HabitState>((ref) {
   final repository = ref.watch(habitsRepositoryProvider);
   return HabitsNotifier(repository);
 });
-

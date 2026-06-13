@@ -4,12 +4,18 @@ import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/models/habit_frequency.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
+import '../mocks/provider_container.dart';
+
+DateTime daysAgo(int days) {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day).subtract(Duration(days: days));
+}
 
 void main() {
   late ProviderContainer container;
 
   setUp(() {
-    container = ProviderContainer();
+    container = createTestProviderContainer();
   });
 
   tearDown(() {
@@ -29,13 +35,13 @@ void main() {
       // Add 3 habits
       for (int i = 1; i <= 3; i++) {
         container.read(habitsProvider.notifier).addHabit(
-          Habit.create(
-            id: '$i',
-            name: 'Habit $i',
-            category: HabitCategory.health,
-            frequency: HabitFrequency.everyDay,
-          ),
-        );
+              Habit.create(
+                id: '$i',
+                name: 'Habit $i',
+                category: HabitCategory.health,
+                frequency: HabitFrequency.everyDay,
+              ),
+            );
       }
 
       final insights = container.read(habitInsightsProvider);
@@ -83,11 +89,13 @@ void main() {
 
       // Complete habit1 3 times, habit2 2 times
       for (int i = 1; i <= 3; i++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('1', DateTime(2024, 1, i));
       }
       for (int i = 1; i <= 2; i++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('2', DateTime(2024, 1, i));
       }
 
@@ -116,19 +124,20 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(habit1);
       container.read(habitsProvider.notifier).addHabit(habit2);
 
-      // Set selected date to Jan 10
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 1, 10);
+      container.read(selectedDateProvider.notifier).state = daysAgo(0);
 
-      // Habit 1: complete Jan 6-10 (5 days)
-      for (int i = 6; i <= 10; i++) {
-        container.read(completionsProvider.notifier)
-            .markComplete('1', DateTime(2024, 1, i));
+      // Habit 1: complete 5 days
+      for (int i = 0; i < 5; i++) {
+        container
+            .read(completionsProvider.notifier)
+            .markComplete('1', daysAgo(i));
       }
 
-      // Habit 2: complete Jan 1-10 (10 days)
-      for (int i = 1; i <= 10; i++) {
-        container.read(completionsProvider.notifier)
-            .markComplete('2', DateTime(2024, 1, i));
+      // Habit 2: complete 10 days
+      for (int i = 0; i < 10; i++) {
+        container
+            .read(completionsProvider.notifier)
+            .markComplete('2', daysAgo(i));
       }
 
       final insights = container.read(habitInsightsProvider);
@@ -140,33 +149,36 @@ void main() {
       // Create 3 habits with different streaks: 5, 10, 15 days
       for (int i = 1; i <= 3; i++) {
         container.read(habitsProvider.notifier).addHabit(
-          Habit.create(
-            id: '$i',
-            name: 'Habit $i',
-            category: HabitCategory.health,
-            frequency: HabitFrequency.everyDay,
-          ),
-        );
+              Habit.create(
+                id: '$i',
+                name: 'Habit $i',
+                category: HabitCategory.health,
+                frequency: HabitFrequency.everyDay,
+              ),
+            );
       }
 
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 1, 20);
+      container.read(selectedDateProvider.notifier).state = daysAgo(0);
 
-      // Habit 1: 5-day streak (Jan 16-20)
-      for (int i = 16; i <= 20; i++) {
-        container.read(completionsProvider.notifier)
-            .markComplete('1', DateTime(2024, 1, i));
+      // Habit 1: 5-day streak
+      for (int i = 0; i < 5; i++) {
+        container
+            .read(completionsProvider.notifier)
+            .markComplete('1', daysAgo(i));
       }
 
-      // Habit 2: 10-day streak (Jan 11-20)
-      for (int i = 11; i <= 20; i++) {
-        container.read(completionsProvider.notifier)
-            .markComplete('2', DateTime(2024, 1, i));
+      // Habit 2: 10-day streak
+      for (int i = 0; i < 10; i++) {
+        container
+            .read(completionsProvider.notifier)
+            .markComplete('2', daysAgo(i));
       }
 
-      // Habit 3: 15-day streak (Jan 6-20)
-      for (int i = 6; i <= 20; i++) {
-        container.read(completionsProvider.notifier)
-            .markComplete('3', DateTime(2024, 1, i));
+      // Habit 3: 15-day streak
+      for (int i = 0; i < 15; i++) {
+        container
+            .read(completionsProvider.notifier)
+            .markComplete('3', daysAgo(i));
       }
 
       final insights = container.read(habitInsightsProvider);
@@ -184,17 +196,20 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 1, 31);
+      container.read(selectedDateProvider.notifier).state =
+          DateTime(2024, 1, 31);
 
       // Complete 21 out of 31 days (Jan 1-31, reference is Jan 31)
       // The range is Jan 1-31 (31 days total after subtract(Duration(days: 30)))
       for (int i = 1; i <= 21; i++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('1', DateTime(2024, 1, i));
       }
 
       final insights = container.read(habitInsightsProvider);
-      expect(insights.overallCompletionRate, closeTo(0.677, 0.01)); // 21/31 ≈ 67.7%
+      expect(insights.overallCompletionRate,
+          closeTo(0.677, 0.01)); // 21/31 ≈ 67.7%
     });
 
     test('calculates weekly consistency correctly', () {
@@ -206,11 +221,13 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 1, 8);
+      container.read(selectedDateProvider.notifier).state =
+          DateTime(2024, 1, 8);
 
       // Complete 5 out of 7 days
       for (int i = 2; i <= 8; i += 2) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('1', DateTime(2024, 1, i));
       }
 
@@ -241,11 +258,13 @@ void main() {
 
       // Complete habit1 5 times, habit2 15 times
       for (int i = 1; i <= 5; i++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('1', DateTime(2024, 1, i));
       }
       for (int i = 1; i <= 15; i++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('2', DateTime(2024, 1, i));
       }
 
@@ -275,10 +294,12 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(habit2);
 
       // Set today as Jan 10
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 1, 10);
+      container.read(selectedDateProvider.notifier).state =
+          DateTime(2024, 1, 10);
 
       // Complete habit1 on Jan 9, but not habit2
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 9));
 
       final insights = container.read(habitInsightsProvider);
@@ -298,7 +319,8 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(weekdaysHabit);
 
       // Set today as Sunday (yesterday was Saturday)
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 1, 7);
+      container.read(selectedDateProvider.notifier).state =
+          DateTime(2024, 1, 7);
 
       final insights = container.read(habitInsightsProvider);
       // Weekdays habit wasn't scheduled on Saturday, so not at risk
@@ -324,18 +346,22 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(habit1);
       container.read(habitsProvider.notifier).addHabit(habit2);
 
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 1, 5);
+      container.read(selectedDateProvider.notifier).state =
+          DateTime(2024, 1, 5);
 
       // Complete both habits on Jan 1, 2, 3 (3 perfect days)
       for (int day = 1; day <= 3; day++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('1', DateTime(2024, 1, day));
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('2', DateTime(2024, 1, day));
       }
 
       // Jan 4: only habit1 completed (not perfect)
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 4));
 
       final insights = container.read(habitInsightsProvider);
@@ -351,11 +377,13 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 1, 5);
+      container.read(selectedDateProvider.notifier).state =
+          DateTime(2024, 1, 5);
 
       // Complete Jan 3, 4, 5 (3-day perfect streak)
       for (int day = 3; day <= 5; day++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('1', DateTime(2024, 1, day));
       }
 
@@ -387,17 +415,20 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(healthHabit);
       container.read(habitsProvider.notifier).addHabit(productivityHabit);
 
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 2, 1);
+      container.read(selectedDateProvider.notifier).state =
+          DateTime(2024, 2, 1);
 
       // Health: complete 27/30 days in January (90%)
       for (int i = 1; i <= 27; i++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('1', DateTime(2024, 1, i));
       }
 
       // Productivity: complete 15/30 days in January (50%)
       for (int i = 1; i <= 15; i++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('2', DateTime(2024, 1, i));
       }
 
@@ -417,11 +448,13 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 1, 31);
+      container.read(selectedDateProvider.notifier).state =
+          DateTime(2024, 1, 31);
 
       // Complete 22/31 days (71%). Reference is Jan 31, so we check Jan 1-31 (31 days)
       for (int i = 1; i <= 22; i++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('1', DateTime(2024, 1, i));
       }
 
@@ -438,11 +471,13 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 1, 8);
+      container.read(selectedDateProvider.notifier).state =
+          DateTime(2024, 1, 8);
 
       // Complete 6/7 days (85.7%)
       for (int i = 2; i <= 8; i++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('1', DateTime(2024, 1, i));
       }
 
@@ -461,16 +496,18 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state = DateTime(2024, 2, 1);
+      container.read(selectedDateProvider.notifier).state = daysAgo(0);
 
       // Create 30-day streak (should unlock 7-day and 30-day achievements)
-      for (int i = 3; i <= 32; i++) {
-        container.read(completionsProvider.notifier)
-            .markComplete('1', DateTime(2024, 1, i));
+      for (int i = 0; i < 30; i++) {
+        container
+            .read(completionsProvider.notifier)
+            .markComplete('1', daysAgo(i));
       }
 
       final insights = container.read(habitInsightsProvider);
-      expect(insights.totalAchievements, greaterThanOrEqualTo(2)); // 7-day + 30-day
+      expect(insights.totalAchievements,
+          greaterThanOrEqualTo(2)); // 7-day + 30-day
     });
   });
 }

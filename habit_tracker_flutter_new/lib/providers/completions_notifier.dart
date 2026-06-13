@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../repositories/interfaces/i_completions_repository.dart';
-import '../main.dart' show completionsRepositoryProvider;
+import 'repository_providers.dart';
 
 /// Immutable state container for habit completions
 ///
@@ -131,19 +131,10 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
     return DateTime(date.year, date.month, date.day);
   }
 
-  /// Checks if a date is today
-  bool _isToday(DateTime date) {
-    final now = DateTime.now();
-    final normalizedDate = _normalizeDate(date);
-    final normalizedToday = _normalizeDate(now);
-    return normalizedDate.isAtSameMomentAs(normalizedToday);
-  }
-
   /// Toggles completion status for a habit on a specific date
   ///
   /// If the habit is completed on the date, it marks it incomplete.
   /// If the habit is not completed on the date, it marks it complete.
-  /// Habits can only be marked complete for today.
   /// Returns the new completion status (true if now complete, false if now incomplete).
   Future<bool> toggleCompletion(String habitId, DateTime date) async {
     try {
@@ -167,13 +158,6 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
         habitCompletions.remove(normalizedDate);
         await _repository.removeCompletion(habitId, normalizedDate);
       } else {
-        // Only allow marking complete if the date is today
-        if (!_isToday(date)) {
-          state = state.copyWith(
-            errorMessage: 'Habits can only be marked complete for today',
-          );
-          return false;
-        }
         habitCompletions.add(normalizedDate);
         await _repository.addCompletion(habitId, normalizedDate);
       }
@@ -202,20 +186,11 @@ class CompletionsNotifier extends StateNotifier<CompletionsState> {
 
   /// Marks a habit as complete on a specific date
   ///
-  /// Habits can only be marked complete for today.
   /// Returns true if successful, false otherwise.
   Future<bool> markComplete(String habitId, DateTime date) async {
     try {
       if (habitId.isEmpty) {
         state = state.copyWith(errorMessage: 'Habit ID cannot be empty');
-        return false;
-      }
-
-      // Only allow marking complete if the date is today
-      if (!_isToday(date)) {
-        state = state.copyWith(
-          errorMessage: 'Habits can only be marked complete for today',
-        );
         return false;
       }
 

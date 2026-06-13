@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/models/habit.dart';
-import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/services/services.dart';
-import 'package:habit_tracker_flutter_new/services/category_style_service.dart';
 import 'package:habit_tracker_flutter_new/screens/add_edit_habit_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/habit_detail_screen.dart';
 import 'package:habit_tracker_flutter_new/widgets/animations/animations.dart';

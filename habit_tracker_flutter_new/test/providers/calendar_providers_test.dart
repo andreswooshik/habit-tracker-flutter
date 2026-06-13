@@ -4,12 +4,13 @@ import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/models/habit_frequency.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
+import '../mocks/provider_container.dart';
 
 void main() {
   late ProviderContainer container;
 
   setUp(() {
-    container = ProviderContainer();
+    container = createTestProviderContainer();
   });
 
   tearDown(() {
@@ -46,9 +47,11 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(habit);
 
       // Complete Jan 15 and Jan 20
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 15));
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 20));
 
       final calendarData = container.read(
@@ -129,13 +132,17 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(habit);
 
       // Complete several dates
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 10));
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 15));
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 20));
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 25));
 
       // Query Jan 15-20 range
@@ -163,11 +170,14 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(habit);
 
       // Complete dates before, during, and after range
-      container.read(completionsProvider.notifier)
-          .markComplete('1', DateTime(2024, 1, 5));  // Before
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
+          .markComplete('1', DateTime(2024, 1, 5)); // Before
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 15)); // During
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 25)); // After
 
       // Query Jan 10-20 range
@@ -210,24 +220,24 @@ void main() {
       // Add 2 daily habits
       for (int i = 1; i <= 2; i++) {
         container.read(habitsProvider.notifier).addHabit(
-          Habit.create(
-            id: '$i',
-            name: 'Daily $i',
-            category: HabitCategory.health,
-            frequency: HabitFrequency.everyDay,
-          ),
-        );
+              Habit.create(
+                id: '$i',
+                name: 'Daily $i',
+                category: HabitCategory.health,
+                frequency: HabitFrequency.everyDay,
+              ),
+            );
       }
 
       // Add 1 weekdays habit
       container.read(habitsProvider.notifier).addHabit(
-        Habit.create(
-          id: '3',
-          name: 'Weekdays',
-          category: HabitCategory.productivity,
-          frequency: HabitFrequency.weekdays,
-        ),
-      );
+            Habit.create(
+              id: '3',
+              name: 'Weekdays',
+              category: HabitCategory.productivity,
+              frequency: HabitFrequency.weekdays,
+            ),
+          );
 
       // Monday: should have all 3
       final monday = DateTime(2024, 1, 1);
@@ -279,7 +289,8 @@ void main() {
       // Complete 7 out of 10 days
       final endDate = DateTime(2024, 1, 10);
       for (int i = 1; i <= 7; i++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('1', DateTime(2024, 1, i));
       }
 
@@ -306,11 +317,14 @@ void main() {
 
       // Jan 1-7, 2024: Mon-Sun (5 weekdays)
       // Complete Mon, Tue, Thu (3 out of 5)
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 1)); // Mon
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 2)); // Tue
-      container.read(completionsProvider.notifier)
+      container
+          .read(completionsProvider.notifier)
           .markComplete('1', DateTime(2024, 1, 4)); // Thu
 
       final rate = container.read(
@@ -336,7 +350,8 @@ void main() {
 
       // Complete all 5 days
       for (int i = 1; i <= 5; i++) {
-        container.read(completionsProvider.notifier)
+        container
+            .read(completionsProvider.notifier)
             .markComplete('1', DateTime(2024, 1, i));
       }
 
@@ -378,8 +393,8 @@ void main() {
       final rate = container.read(
         completionRateProvider((
           habitId: '1',
-          startDate: DateTime(2024, 1, 6),  // Sat
-          endDate: DateTime(2024, 1, 7),    // Sun
+          startDate: DateTime(2024, 1, 6), // Sat
+          endDate: DateTime(2024, 1, 7), // Sun
         )),
       );
 

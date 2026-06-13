@@ -14,7 +14,7 @@ class StreakDisplayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final streakEmoji = _getStreakEmoji(currentStreak);
+    final streakIcon = _getStreakIcon(currentStreak);
     final streakColor = _getStreakColor(currentStreak);
 
     return Container(
@@ -91,10 +91,10 @@ class StreakDisplayCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Emoji Icon
-                  Text(
-                    streakEmoji,
-                    style: const TextStyle(fontSize: 64),
+                  Icon(
+                    streakIcon,
+                    size: 64,
+                    color: streakColor,
                   ),
 
                   const SizedBox(width: 24),
@@ -232,7 +232,7 @@ class StreakDisplayCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '🎉 Milestone achieved! $streak days strong!',
+                  'Milestone achieved! $streak days strong!',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.green.shade700,
@@ -260,12 +260,12 @@ class StreakDisplayCard extends StatelessWidget {
     );
   }
 
-  String _getStreakEmoji(int streak) {
-    if (streak >= 30) return '🏆'; // Trophy
-    if (streak >= 14) return '⚡'; // Lightning
-    if (streak >= 7) return '🔥'; // Fire
-    if (streak >= 3) return '💪'; // Muscle
-    return '🌱'; // Seedling
+  IconData _getStreakIcon(int streak) {
+    if (streak >= 30) return Icons.emoji_events;
+    if (streak >= 14) return Icons.bolt;
+    if (streak >= 7) return Icons.local_fire_department;
+    if (streak >= 3) return Icons.fitness_center;
+    return Icons.spa;
   }
 
   Color _getStreakColor(int streak) {

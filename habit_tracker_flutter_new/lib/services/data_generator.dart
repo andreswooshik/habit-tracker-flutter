@@ -168,15 +168,14 @@ class RandomDataGenerator implements IDataGenerator {
     for (int i = 0; i < count; i++) {
       // Pick random category
       final category = categories[_random.nextInt(categories.length)];
-      
+
       // Get unique name
       String name = _getUniqueName(category, usedNames);
-      
+
       // Pick random frequency
       final frequency = _randomFrequency();
-      final customDays = frequency == HabitFrequency.custom
-          ? _randomCustomDays()
-          : null;
+      final customDays =
+          frequency == HabitFrequency.custom ? _randomCustomDays() : null;
 
       // Random creation date (0-30 days ago) - recent habits for demo
       final daysAgo = _random.nextInt(31);
@@ -237,7 +236,8 @@ class RandomDataGenerator implements IDataGenerator {
 
     // Iterate through each day in range
     DateTime current = normalizedStart;
-    while (current.isBefore(normalizedEnd) || current.isAtSameMomentAs(normalizedEnd)) {
+    while (current.isBefore(normalizedEnd) ||
+        current.isAtSameMomentAs(normalizedEnd)) {
       // Check if habit is scheduled for this day
       if (habit.isScheduledFor(current)) {
         // Apply completion rate with slight randomness
@@ -245,7 +245,7 @@ class RandomDataGenerator implements IDataGenerator {
           completions.add(current);
         }
       }
-      
+
       current = current.add(const Duration(days: 1));
     }
 
@@ -262,7 +262,8 @@ class RandomDataGenerator implements IDataGenerator {
     }
 
     if (daysOfHistory < 0) {
-      throw ArgumentError('daysOfHistory must be non-negative, got $daysOfHistory');
+      throw ArgumentError(
+          'daysOfHistory must be non-negative, got $daysOfHistory');
     }
 
     // Generate habits
@@ -277,44 +278,54 @@ class RandomDataGenerator implements IDataGenerator {
 
     for (final habit in habits) {
       // Use habit creation date if it's later than startDate
-      final habitStartDate = habit.createdAt.isAfter(startDate)
-          ? habit.createdAt
-          : startDate;
+      final habitStartDate =
+          habit.createdAt.isAfter(startDate) ? habit.createdAt : startDate;
 
       // Vary completion rate per habit (0.75 to 0.95) - very high for demo
       // This creates realistic variation: some users are very consistent, some struggle
       final baseRate = 0.75 + (_random.nextDouble() * 0.20);
-      
+
       // Create realistic patterns with streaks and breaks
       final completions = <DateTime>{};
       DateTime current = _normalizeDate(habitStartDate);
       final normalizedEnd = _normalizeDate(endDate);
-      
+
       // Simulate streak patterns
       int consecutiveDays = 0;
       int missedDays = 0;
-      final streakBonus = _random.nextDouble() * 0.15; // 0-15% bonus when on streak
+      final streakBonus =
+          _random.nextDouble() * 0.15; // 0-15% bonus when on streak
 
-      while (current.isBefore(normalizedEnd) || current.isAtSameMomentAs(normalizedEnd)) {
+      while (current.isBefore(normalizedEnd) ||
+          current.isAtSameMomentAs(normalizedEnd)) {
         if (habit.isScheduledFor(current)) {
           // Completion rate with streak momentum
           final daysSinceStart = current.difference(habitStartDate).inDays;
           final daysUntilEnd = normalizedEnd.difference(current).inDays;
-          
+
           // Boost recent days (last 7 days) to ensure weekly chart has data
           final recencyBoost = daysUntilEnd <= 7 ? 1.4 : 1.0;
-          
+
           // Slight decay over time but not too aggressive
           final decayFactor = 1.0 - (daysSinceStart / (daysOfHistory * 3));
-          
+
           // Streak bonus - being consistent makes you more likely to continue
           final streakFactor = consecutiveDays > 0 ? (1.0 + streakBonus) : 1.0;
-          
+
           // Weekend effect - slightly lower completion on weekends for some habits
-          final isWeekend = current.weekday == DateTime.saturday || current.weekday == DateTime.sunday;
-          final weekendFactor = (isWeekend && habit.frequency != HabitFrequency.weekends) ? 0.85 : 1.0;
-          
-          final adjustedRate = (baseRate * decayFactor * streakFactor * weekendFactor * recencyBoost).clamp(0.7, 1.0);
+          final isWeekend = current.weekday == DateTime.saturday ||
+              current.weekday == DateTime.sunday;
+          final weekendFactor =
+              (isWeekend && habit.frequency != HabitFrequency.weekends)
+                  ? 0.85
+                  : 1.0;
+
+          final adjustedRate = (baseRate *
+                  decayFactor *
+                  streakFactor *
+                  weekendFactor *
+                  recencyBoost)
+              .clamp(0.7, 1.0);
 
           if (_random.nextDouble() < adjustedRate) {
             completions.add(current);
@@ -328,7 +339,7 @@ class RandomDataGenerator implements IDataGenerator {
             }
           }
         }
-        
+
         current = current.add(const Duration(days: 1));
       }
 
@@ -343,8 +354,9 @@ class RandomDataGenerator implements IDataGenerator {
 
   /// Gets a unique habit name for the category.
   String _getUniqueName(HabitCategory category, Set<String> usedNames) {
-    final templates = _habitTemplates[category] ?? _habitTemplates[HabitCategory.other]!;
-    
+    final templates =
+        _habitTemplates[category] ?? _habitTemplates[HabitCategory.other]!;
+
     // Try to get an unused name
     for (int attempt = 0; attempt < 100; attempt++) {
       final name = templates[_random.nextInt(templates.length)];
@@ -367,27 +379,22 @@ class RandomDataGenerator implements IDataGenerator {
 
   /// Returns a random frequency with realistic distribution.
   HabitFrequency _randomFrequency() {
-    // For demo purposes, all habits are Every Day so all 8 show daily
-    // This makes the demo cleaner and avoids confusion
-    return HabitFrequency.everyDay;
-    
-    // Original weighted distribution (uncomment for realistic variation):
-    // final value = _random.nextDouble();
-    // if (value < 0.5) return HabitFrequency.everyDay;      // 50%
-    // if (value < 0.75) return HabitFrequency.weekdays;     // 25%
-    // if (value < 0.85) return HabitFrequency.custom;       // 10%
-    // return HabitFrequency.weekends;                        // 15%
+    final value = _random.nextDouble();
+    if (value < 0.5) return HabitFrequency.everyDay; // 50%
+    if (value < 0.75) return HabitFrequency.weekdays; // 25%
+    if (value < 0.85) return HabitFrequency.custom; // 10%
+    return HabitFrequency.weekends; // 15%
   }
 
   /// Generates random custom days (1-7 for Monday-Sunday).
   List<int> _randomCustomDays() {
     final numDays = 1 + _random.nextInt(5); // 1-5 days
     final days = <int>{};
-    
+
     while (days.length < numDays) {
       days.add(1 + _random.nextInt(7)); // 1-7 (Mon-Sun)
     }
-    
+
     return days.toList()..sort();
   }
 

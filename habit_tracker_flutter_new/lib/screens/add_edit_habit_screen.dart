@@ -8,7 +8,7 @@ import 'package:habit_tracker_flutter_new/services/category_style_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// Strava-inspired Add/Edit Habit Screen
-/// 
+///
 /// Follows SOLID principles:
 /// - Single Responsibility: Handles habit creation and editing only
 /// - Open/Closed: Extensible via composition, not modification
@@ -24,14 +24,13 @@ class AddEditHabitScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AddEditHabitScreen> createState() =>
-      _AddEditHabitScreenState();
+  ConsumerState<AddEditHabitScreen> createState() => _AddEditHabitScreenState();
 }
 
 class _AddEditHabitScreenState extends ConsumerState<AddEditHabitScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  
+
   late HabitCategory _selectedCategory;
   late HabitFrequency _selectedFrequency;
   Set<int> _customDays = {};
@@ -46,8 +45,8 @@ class _AddEditHabitScreenState extends ConsumerState<AddEditHabitScreen> {
       _nameController.text = widget.habit!.name;
       _selectedCategory = widget.habit!.category;
       _selectedFrequency = widget.habit!.frequency;
-      _customDays = widget.habit!.customDays != null 
-          ? Set.from(widget.habit!.customDays!) 
+      _customDays = widget.habit!.customDays != null
+          ? Set.from(widget.habit!.customDays!)
           : {};
     } else {
       _selectedCategory = HabitCategory.values.first;
@@ -403,15 +402,32 @@ class _AddEditHabitScreenState extends ConsumerState<AddEditHabitScreen> {
         createdAt: _isEditMode ? widget.habit!.createdAt : DateTime.now(),
       );
 
-      if (_isEditMode) {
-        ref.read(habitsProvider.notifier).updateHabit(habit.id, habit);
-      } else {
-        ref.read(habitsProvider.notifier).addHabit(habit);
-      }
+      final notifier = ref.read(habitsProvider.notifier);
+      final success = _isEditMode
+          ? await notifier.updateHabit(habit.id, habit)
+          : await notifier.addHabit(habit);
 
       if (mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
+        if (!success) {
+          final errorMessage = ref.read(habitsProvider).errorMessage ??
+              (_isEditMode
+                  ? 'Unable to update habit'
+                  : 'Unable to create habit');
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
+        final navigator = Navigator.of(context);
+        final messenger = ScaffoldMessenger.of(context);
+
+        navigator.pop();
+        messenger.showSnackBar(
           SnackBar(
             content: Text(
               _isEditMode
@@ -576,7 +592,6 @@ class _CategoryChip extends StatelessWidget {
       ),
     );
   }
-
 }
 
 /// Frequency option radio button

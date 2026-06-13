@@ -20,6 +20,11 @@ class HabitDetailScreen extends ConsumerWidget {
     final habitInsights = ref.watch(habitInsightsForHabitProvider(habit.id));
     final streakData = ref.watch(habitStreakProvider(habit.id));
     final previousStreak = ref.watch(habitStreakProvider(habit.id)).current;
+    final completionsState = ref.watch(completionsProvider);
+    final today = DateTime.now();
+    final isAtRisk = streakData.hasActiveStreak &&
+        habit.isScheduledFor(today) &&
+        !completionsState.isCompletedOn(habit.id, today);
 
     return Hero(
       tag: 'habit_card_${habit.id}',
@@ -46,7 +51,7 @@ class HabitDetailScreen extends ConsumerWidget {
                     StreakDisplayCard(
                       currentStreak: streakData.current,
                       bestStreak: streakData.longest,
-                      isAtRisk: false, // TODO: Implement risk detection
+                      isAtRisk: isAtRisk,
                     ),
 
                     const SizedBox(height: 16),

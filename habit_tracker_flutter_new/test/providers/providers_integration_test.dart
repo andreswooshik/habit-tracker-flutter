@@ -4,13 +4,14 @@ import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/models/habit_frequency.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
+import '../mocks/provider_container.dart';
 
 void main() {
   group('Provider Integration Tests -', () {
     late ProviderContainer container;
 
     setUp(() {
-      container = ProviderContainer();
+      container = createTestProviderContainer();
     });
 
     tearDown(() {
@@ -20,7 +21,8 @@ void main() {
     group('HabitsNotifier + CompletionsNotifier Integration -', () {
       test('should track completions for created habits', () {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        final completionsNotifier = container.read(completionsProvider.notifier);
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
 
         // Create a habit
         final habit = Habit.create(
@@ -43,9 +45,11 @@ void main() {
         expect(completionsState.isCompletedOn(habit.id, date), true);
       });
 
-      test('should handle multiple habits with different completion patterns', () {
+      test('should handle multiple habits with different completion patterns',
+          () {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        final completionsNotifier = container.read(completionsProvider.notifier);
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
 
         // Create multiple habits
         final habit1 = Habit.create(
@@ -81,7 +85,8 @@ void main() {
 
       test('should maintain completions after habit update', () {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        final completionsNotifier = container.read(completionsProvider.notifier);
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
 
         final habit = Habit.create(
           id: 'habit-1',
@@ -91,7 +96,7 @@ void main() {
         );
 
         habitsNotifier.addHabit(habit);
-        
+
         final date = DateTime(2025, 12, 18);
         completionsNotifier.markComplete(habit.id, date);
 
@@ -106,7 +111,8 @@ void main() {
 
       test('should clean up completions when habit is deleted', () {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        final completionsNotifier = container.read(completionsProvider.notifier);
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
 
         final habit = Habit.create(
           id: 'habit-1',
@@ -129,9 +135,11 @@ void main() {
         expect(completionsState.getCompletionCount(habit.id), 0);
       });
 
-      test('should handle archived habits separately from active completions', () {
+      test('should handle archived habits separately from active completions',
+          () {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        final completionsNotifier = container.read(completionsProvider.notifier);
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
 
         final habit = Habit.create(
           id: 'habit-1',
@@ -170,7 +178,7 @@ void main() {
 
       test('should filter habits by selected date', () {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        
+
         final dailyHabit = Habit.create(
           id: 'daily-1',
           name: 'Daily Exercise',
@@ -201,7 +209,8 @@ void main() {
       });
 
       test('should show relevant completions for selected date', () {
-        final completionsNotifier = container.read(completionsProvider.notifier);
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
 
         final habitId = 'habit-1';
         final date1 = DateTime(2025, 12, 18);
@@ -223,7 +232,8 @@ void main() {
         expect(completionsState.isCompletedOn(habitId, selectedDate), true);
 
         // Check non-completed date
-        container.read(selectedDateProvider.notifier).state = DateTime(2025, 12, 20);
+        container.read(selectedDateProvider.notifier).state =
+            DateTime(2025, 12, 20);
         completionsState = container.read(completionsProvider);
         selectedDate = container.read(selectedDateProvider);
         expect(completionsState.isCompletedOn(habitId, selectedDate), false);
@@ -231,9 +241,10 @@ void main() {
     });
 
     group('Complete Workflow Integration -', () {
-      test('should handle complete habit lifecycle', () {
+      test('should handle complete habit lifecycle', () async {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        final completionsNotifier = container.read(completionsProvider.notifier);
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
 
         // 1. Create habit
         final habit = Habit.create(
@@ -242,7 +253,7 @@ void main() {
           frequency: HabitFrequency.everyDay,
           category: HabitCategory.health,
         );
-        expect(habitsNotifier.addHabit(habit), true);
+        expect(await habitsNotifier.addHabit(habit), true);
 
         // 2. Complete habit on multiple dates
         final dates = [
@@ -260,7 +271,7 @@ void main() {
           name: 'Evening Exercise',
           targetDays: 60,
         );
-        expect(habitsNotifier.updateHabit(habit.id, updatedHabit), true);
+        expect(await habitsNotifier.updateHabit(habit.id, updatedHabit), true);
 
         var habitState = container.read(habitsProvider);
         expect(habitState.habitsById[habit.id]?.name, 'Evening Exercise');
@@ -271,7 +282,7 @@ void main() {
         expect(completionsState.getCompletionCount(habit.id), 3);
 
         // 5. Archive habit
-        expect(habitsNotifier.archiveHabit(habit.id), true);
+        expect(await habitsNotifier.archiveHabit(habit.id), true);
 
         habitState = container.read(habitsProvider);
         expect(habitState.habitsById[habit.id]?.isArchived, true);
@@ -279,14 +290,14 @@ void main() {
         expect(habitState.archivedCount, 1);
 
         // 6. Unarchive habit
-        expect(habitsNotifier.unarchiveHabit(habit.id), true);
+        expect(await habitsNotifier.unarchiveHabit(habit.id), true);
 
         habitState = container.read(habitsProvider);
         expect(habitState.habitsById[habit.id]?.isArchived, false);
         expect(habitState.activeCount, 1);
 
         // 7. Delete habit and clean up
-        expect(habitsNotifier.deleteHabit(habit.id), true);
+        expect(await habitsNotifier.deleteHabit(habit.id), true);
         completionsNotifier.removeHabitCompletions(habit.id);
 
         habitState = container.read(habitsProvider);
@@ -297,7 +308,8 @@ void main() {
 
       test('should handle multiple habits with various operations', () {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        final completionsNotifier = container.read(completionsProvider.notifier);
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
 
         // Create multiple habits
         final habits = [
@@ -354,12 +366,14 @@ void main() {
         habitState = container.read(habitsProvider);
         completionsState = container.read(completionsProvider);
         expect(habitState.totalCount, 2);
-        expect(completionsState.totalCompletions, 3); // Only habit-1 and habit-3 completions remain
+        expect(completionsState.totalCompletions,
+            3); // Only habit-1 and habit-3 completions remain
       });
 
       test('should maintain data integrity across provider operations', () {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        final completionsNotifier = container.read(completionsProvider.notifier);
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
 
         final habit = Habit.create(
           id: 'habit-1',
@@ -370,7 +384,7 @@ void main() {
 
         // Add habit
         habitsNotifier.addHabit(habit);
-        
+
         // Add completions
         final dates = List.generate(7, (i) => DateTime(2025, 12, 11 + i));
         completionsNotifier.bulkComplete(habit.id, dates);
@@ -401,7 +415,7 @@ void main() {
     group('State Update Cascade Tests -', () {
       test('should notify listeners when habits state changes', () {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        
+
         var notificationCount = 0;
         final subscription = container.listen(
           habitsProvider,
@@ -430,8 +444,9 @@ void main() {
       });
 
       test('should notify listeners when completions state changes', () {
-        final completionsNotifier = container.read(completionsProvider.notifier);
-        
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
+
         var notificationCount = 0;
         final subscription = container.listen(
           completionsProvider,
@@ -464,10 +479,12 @@ void main() {
           },
         );
 
-        container.read(selectedDateProvider.notifier).state = DateTime(2025, 12, 18);
+        container.read(selectedDateProvider.notifier).state =
+            DateTime(2025, 12, 18);
         expect(notificationCount, 1);
 
-        container.read(selectedDateProvider.notifier).state = DateTime(2025, 12, 19);
+        container.read(selectedDateProvider.notifier).state =
+            DateTime(2025, 12, 19);
         expect(notificationCount, 2);
 
         subscription.close();
@@ -475,7 +492,8 @@ void main() {
 
       test('should handle multiple simultaneous state changes', () {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        final completionsNotifier = container.read(completionsProvider.notifier);
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
 
         var habitsUpdateCount = 0;
         var completionsUpdateCount = 0;
@@ -517,7 +535,8 @@ void main() {
     group('Error Handling Integration -', () {
       test('should handle errors in one provider without affecting others', () {
         final habitsNotifier = container.read(habitsProvider.notifier);
-        final completionsNotifier = container.read(completionsProvider.notifier);
+        final completionsNotifier =
+            container.read(completionsProvider.notifier);
 
         final habit = Habit.create(
           id: 'habit-1',
@@ -544,13 +563,14 @@ void main() {
 
         // Habits should have error
         expect(habitState.errorMessage, isNotNull);
-        
+
         // Completions should be unaffected
         expect(completionsState.errorMessage, isNull);
-        expect(completionsState.isCompletedOn(habit.id, DateTime(2025, 12, 18)), true);
+        expect(completionsState.isCompletedOn(habit.id, DateTime(2025, 12, 18)),
+            true);
       });
 
-      test('should recover from errors gracefully', () {
+      test('should recover from errors gracefully', () async {
         final habitsNotifier = container.read(habitsProvider.notifier);
 
         // Cause an error
@@ -570,7 +590,7 @@ void main() {
           frequency: HabitFrequency.everyDay,
           category: HabitCategory.health,
         );
-        expect(habitsNotifier.addHabit(habit), true);
+        expect(await habitsNotifier.addHabit(habit), true);
       });
     });
   });

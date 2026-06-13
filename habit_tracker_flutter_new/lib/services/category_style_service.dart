@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/habit_category.dart';
 
 /// Service for providing consistent category styling across the app
-/// 
+///
 /// Follows SOLID principles:
 /// - Single Responsibility: Only handles category visual styling
 /// - Open/Closed: Extensible via configuration, closed for modification
@@ -10,47 +10,48 @@ import '../models/habit_category.dart';
 /// - Interface Segregation: Provides focused styling interface
 /// - Dependency Inversion: UI depends on this abstraction, not concrete values
 class CategoryStyleService {
-  static final CategoryStyleService _instance = CategoryStyleService._internal();
-  
+  static final CategoryStyleService _instance =
+      CategoryStyleService._internal();
+
   factory CategoryStyleService() => _instance;
-  
+
   CategoryStyleService._internal();
 
   /// Configuration map for category styles
-  final Map<HabitCategory, _CategoryStyle> _styles = {
-    HabitCategory.health: _CategoryStyle(
+  final Map<HabitCategory, CategoryStyle> _styles = {
+    HabitCategory.health: CategoryStyle(
       icon: Icons.favorite,
       color: Colors.red,
     ),
-    HabitCategory.productivity: _CategoryStyle(
+    HabitCategory.productivity: CategoryStyle(
       icon: Icons.work,
       color: Colors.orange,
     ),
-    HabitCategory.mindfulness: _CategoryStyle(
+    HabitCategory.mindfulness: CategoryStyle(
       icon: Icons.self_improvement,
       color: Colors.purple,
     ),
-    HabitCategory.social: _CategoryStyle(
+    HabitCategory.social: CategoryStyle(
       icon: Icons.people,
       color: Colors.pink,
     ),
-    HabitCategory.creativity: _CategoryStyle(
+    HabitCategory.creativity: CategoryStyle(
       icon: Icons.palette,
       color: Colors.indigo,
     ),
-    HabitCategory.learning: _CategoryStyle(
+    HabitCategory.learning: CategoryStyle(
       icon: Icons.school,
       color: Colors.blue,
     ),
-    HabitCategory.fitness: _CategoryStyle(
+    HabitCategory.fitness: CategoryStyle(
       icon: Icons.fitness_center,
       color: Colors.green,
     ),
-    HabitCategory.finance: _CategoryStyle(
+    HabitCategory.finance: CategoryStyle(
       icon: Icons.attach_money,
       color: Colors.teal,
     ),
-    HabitCategory.other: _CategoryStyle(
+    HabitCategory.other: CategoryStyle(
       icon: Icons.stars,
       color: Colors.grey,
     ),
@@ -67,17 +68,18 @@ class CategoryStyleService {
   }
 
   /// Gets both icon and color for a category
-  _CategoryStyle getStyle(HabitCategory category) {
-    return _styles[category] ?? _CategoryStyle(icon: Icons.stars, color: Colors.grey);
+  CategoryStyle getStyle(HabitCategory category) {
+    return _styles[category] ??
+        CategoryStyle(icon: Icons.stars, color: Colors.grey);
   }
 }
 
-/// Internal class representing category visual style
-class _CategoryStyle {
+/// Represents category visual style
+class CategoryStyle {
   final IconData icon;
   final Color color;
 
-  _CategoryStyle({
+  CategoryStyle({
     required this.icon,
     required this.color,
   });

@@ -23,7 +23,7 @@ void main() {
     });
 
     group('Initial State -', () {
-      test('should start with empty initial state', () {
+      test('should start with empty initial state', () async {
         expect(notifier.state.isEmpty, true);
         expect(notifier.state.completions, isEmpty);
         expect(notifier.state.isLoading, false);
@@ -33,8 +33,8 @@ void main() {
     });
 
     group('markComplete -', () {
-      test('should successfully mark a habit as complete', () {
-        final result = notifier.markComplete(testHabitId1, testDate1);
+      test('should successfully mark a habit as complete', () async {
+        final result = await notifier.markComplete(testHabitId1, testDate1);
 
         expect(result, true);
         expect(notifier.state.isCompletedOn(testHabitId1, testDate1), true);
@@ -42,7 +42,7 @@ void main() {
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should mark multiple dates as complete for same habit', () {
+      test('should mark multiple dates as complete for same habit', () async {
         notifier.markComplete(testHabitId1, testDate1);
         notifier.markComplete(testHabitId1, testDate2);
         notifier.markComplete(testHabitId1, testDate3);
@@ -53,7 +53,7 @@ void main() {
         expect(notifier.state.isCompletedOn(testHabitId1, testDate3), true);
       });
 
-      test('should handle duplicate completions (idempotent)', () {
+      test('should handle duplicate completions (idempotent)', () async {
         notifier.markComplete(testHabitId1, testDate1);
         notifier.markComplete(testHabitId1, testDate1);
         notifier.markComplete(testHabitId1, testDate1);
@@ -61,22 +61,24 @@ void main() {
         expect(notifier.state.getCompletionCount(testHabitId1), 1);
       });
 
-      test('should fail with empty habit ID', () {
-        final result = notifier.markComplete('', testDate1);
+      test('should fail with empty habit ID', () async {
+        final result = await notifier.markComplete('', testDate1);
 
         expect(result, false);
         expect(notifier.state.errorMessage, contains('cannot be empty'));
       });
 
-      test('should normalize dates (remove time component)', () {
+      test('should normalize dates (remove time component)', () async {
         final dateWithTime = DateTime(2025, 12, 17, 14, 30, 45);
         notifier.markComplete(testHabitId1, dateWithTime);
 
         final dateWithoutTime = DateTime(2025, 12, 17);
-        expect(notifier.state.isCompletedOn(testHabitId1, dateWithoutTime), true);
+        expect(
+            notifier.state.isCompletedOn(testHabitId1, dateWithoutTime), true);
       });
 
-      test('should track completions for multiple habits independently', () {
+      test('should track completions for multiple habits independently',
+          () async {
         notifier.markComplete(testHabitId1, testDate1);
         notifier.markComplete(testHabitId2, testDate1);
 
@@ -92,8 +94,8 @@ void main() {
         notifier.markComplete(testHabitId1, testDate2);
       });
 
-      test('should successfully mark a habit as incomplete', () {
-        final result = notifier.markIncomplete(testHabitId1, testDate1);
+      test('should successfully mark a habit as incomplete', () async {
+        final result = await notifier.markIncomplete(testHabitId1, testDate1);
 
         expect(result, true);
         expect(notifier.state.isCompletedOn(testHabitId1, testDate1), false);
@@ -101,14 +103,16 @@ void main() {
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should handle marking incomplete when not completed (idempotent)', () {
-        final result = notifier.markIncomplete(testHabitId1, testDate3);
+      test('should handle marking incomplete when not completed (idempotent)',
+          () async {
+        final result = await notifier.markIncomplete(testHabitId1, testDate3);
 
         expect(result, true);
         expect(notifier.state.getCompletionCount(testHabitId1), 2);
       });
 
-      test('should remove habit from map when all completions removed', () {
+      test('should remove habit from map when all completions removed',
+          () async {
         notifier.markIncomplete(testHabitId1, testDate1);
         notifier.markIncomplete(testHabitId1, testDate2);
 
@@ -116,23 +120,25 @@ void main() {
         expect(notifier.state.getCompletionCount(testHabitId1), 0);
       });
 
-      test('should fail with empty habit ID', () {
-        final result = notifier.markIncomplete('', testDate1);
+      test('should fail with empty habit ID', () async {
+        final result = await notifier.markIncomplete('', testDate1);
 
         expect(result, false);
         expect(notifier.state.errorMessage, contains('cannot be empty'));
       });
 
-      test('should normalize dates when marking incomplete', () {
+      test('should normalize dates when marking incomplete', () async {
         final dateWithTime = DateTime(2025, 12, 17, 14, 30, 45);
-        final result = notifier.markIncomplete(testHabitId1, dateWithTime);
+        final result =
+            await notifier.markIncomplete(testHabitId1, dateWithTime);
 
         expect(result, true);
         expect(notifier.state.isCompletedOn(testHabitId1, testDate1), false);
       });
 
-      test('should handle non-existent habit gracefully', () {
-        final result = notifier.markIncomplete('non-existent-habit', testDate1);
+      test('should handle non-existent habit gracefully', () async {
+        final result =
+            await notifier.markIncomplete('non-existent-habit', testDate1);
 
         expect(result, true); // Should succeed (no-op)
         expect(notifier.state.errorMessage, isNull);
@@ -140,22 +146,22 @@ void main() {
     });
 
     group('toggleCompletion -', () {
-      test('should toggle from incomplete to complete', () {
-        final result = notifier.toggleCompletion(testHabitId1, testDate1);
+      test('should toggle from incomplete to complete', () async {
+        final result = await notifier.toggleCompletion(testHabitId1, testDate1);
 
         expect(result, true); // Returns new state (true = complete)
         expect(notifier.state.isCompletedOn(testHabitId1, testDate1), true);
       });
 
-      test('should toggle from complete to incomplete', () {
+      test('should toggle from complete to incomplete', () async {
         notifier.markComplete(testHabitId1, testDate1);
-        final result = notifier.toggleCompletion(testHabitId1, testDate1);
+        final result = await notifier.toggleCompletion(testHabitId1, testDate1);
 
         expect(result, false); // Returns new state (false = incomplete)
         expect(notifier.state.isCompletedOn(testHabitId1, testDate1), false);
       });
 
-      test('should toggle multiple times correctly', () {
+      test('should toggle multiple times correctly', () async {
         notifier.toggleCompletion(testHabitId1, testDate1); // complete
         expect(notifier.state.isCompletedOn(testHabitId1, testDate1), true);
 
@@ -166,22 +172,24 @@ void main() {
         expect(notifier.state.isCompletedOn(testHabitId1, testDate1), true);
       });
 
-      test('should fail with empty habit ID', () {
-        final result = notifier.toggleCompletion('', testDate1);
+      test('should fail with empty habit ID', () async {
+        final result = await notifier.toggleCompletion('', testDate1);
 
         expect(result, false);
         expect(notifier.state.errorMessage, contains('cannot be empty'));
       });
 
-      test('should normalize dates when toggling', () {
+      test('should normalize dates when toggling', () async {
         final dateWithTime = DateTime(2025, 12, 17, 14, 30, 45);
         notifier.toggleCompletion(testHabitId1, dateWithTime);
 
         final dateWithoutTime = DateTime(2025, 12, 17);
-        expect(notifier.state.isCompletedOn(testHabitId1, dateWithoutTime), true);
+        expect(
+            notifier.state.isCompletedOn(testHabitId1, dateWithoutTime), true);
       });
 
-      test('should remove habit from map when toggling off last completion', () {
+      test('should remove habit from map when toggling off last completion',
+          () async {
         notifier.toggleCompletion(testHabitId1, testDate1); // complete
         notifier.toggleCompletion(testHabitId1, testDate1); // incomplete
 
@@ -190,9 +198,9 @@ void main() {
     });
 
     group('bulkComplete -', () {
-      test('should mark multiple dates as complete in one operation', () {
+      test('should mark multiple dates as complete in one operation', () async {
         final dates = [testDate1, testDate2, testDate3];
-        final count = notifier.bulkComplete(testHabitId1, dates);
+        final count = await notifier.bulkComplete(testHabitId1, dates);
 
         expect(count, 3);
         expect(notifier.state.getCompletionCount(testHabitId1), 3);
@@ -201,29 +209,29 @@ void main() {
         expect(notifier.state.isCompletedOn(testHabitId1, testDate3), true);
       });
 
-      test('should handle empty date list', () {
-        final count = notifier.bulkComplete(testHabitId1, []);
+      test('should handle empty date list', () async {
+        final count = await notifier.bulkComplete(testHabitId1, []);
 
         expect(count, 0);
         expect(notifier.state.getCompletionCount(testHabitId1), 0);
       });
 
-      test('should handle duplicate dates in bulk operation', () {
+      test('should handle duplicate dates in bulk operation', () async {
         final dates = [testDate1, testDate1, testDate2, testDate2];
-        final count = notifier.bulkComplete(testHabitId1, dates);
+        final count = await notifier.bulkComplete(testHabitId1, dates);
 
         expect(count, 2); // Only 2 unique dates
         expect(notifier.state.getCompletionCount(testHabitId1), 2);
       });
 
-      test('should fail with empty habit ID', () {
-        final count = notifier.bulkComplete('', [testDate1]);
+      test('should fail with empty habit ID', () async {
+        final count = await notifier.bulkComplete('', [testDate1]);
 
         expect(count, 0);
         expect(notifier.state.errorMessage, contains('cannot be empty'));
       });
 
-      test('should normalize all dates in bulk operation', () {
+      test('should normalize all dates in bulk operation', () async {
         final datesWithTime = [
           DateTime(2025, 12, 17, 10, 30),
           DateTime(2025, 12, 18, 14, 45),
@@ -231,22 +239,30 @@ void main() {
         ];
         notifier.bulkComplete(testHabitId1, datesWithTime);
 
-        expect(notifier.state.isCompletedOn(testHabitId1, DateTime(2025, 12, 17)), true);
-        expect(notifier.state.isCompletedOn(testHabitId1, DateTime(2025, 12, 18)), true);
-        expect(notifier.state.isCompletedOn(testHabitId1, DateTime(2025, 12, 19)), true);
+        expect(
+            notifier.state.isCompletedOn(testHabitId1, DateTime(2025, 12, 17)),
+            true);
+        expect(
+            notifier.state.isCompletedOn(testHabitId1, DateTime(2025, 12, 18)),
+            true);
+        expect(
+            notifier.state.isCompletedOn(testHabitId1, DateTime(2025, 12, 19)),
+            true);
       });
 
-      test('should merge with existing completions', () {
+      test('should merge with existing completions', () async {
         notifier.markComplete(testHabitId1, testDate1);
-        final count = notifier.bulkComplete(testHabitId1, [testDate2, testDate3]);
+        final count =
+            await notifier.bulkComplete(testHabitId1, [testDate2, testDate3]);
 
         expect(count, 2);
         expect(notifier.state.getCompletionCount(testHabitId1), 3);
       });
 
-      test('should handle large bulk operations efficiently', () {
-        final dates = List.generate(100, (index) => DateTime(2025, 1, 1).add(Duration(days: index)));
-        final count = notifier.bulkComplete(testHabitId1, dates);
+      test('should handle large bulk operations efficiently', () async {
+        final dates = List.generate(
+            100, (index) => DateTime(2025, 1, 1).add(Duration(days: index)));
+        final count = await notifier.bulkComplete(testHabitId1, dates);
 
         expect(count, 100);
         expect(notifier.state.getCompletionCount(testHabitId1), 100);
@@ -258,8 +274,10 @@ void main() {
         notifier.bulkComplete(testHabitId1, [testDate1, testDate2, testDate3]);
       });
 
-      test('should mark multiple dates as incomplete in one operation', () {
-        final count = notifier.bulkIncomplete(testHabitId1, [testDate1, testDate2]);
+      test('should mark multiple dates as incomplete in one operation',
+          () async {
+        final count =
+            await notifier.bulkIncomplete(testHabitId1, [testDate1, testDate2]);
 
         expect(count, 2);
         expect(notifier.state.getCompletionCount(testHabitId1), 1);
@@ -268,48 +286,53 @@ void main() {
         expect(notifier.state.isCompletedOn(testHabitId1, testDate3), true);
       });
 
-      test('should handle empty date list', () {
-        final count = notifier.bulkIncomplete(testHabitId1, []);
+      test('should handle empty date list', () async {
+        final count = await notifier.bulkIncomplete(testHabitId1, []);
 
         expect(count, 0);
         expect(notifier.state.getCompletionCount(testHabitId1), 3);
       });
 
-      test('should handle non-existent completions gracefully', () {
+      test('should handle non-existent completions gracefully', () async {
         final nonExistentDate = DateTime(2025, 1, 1);
-        final count = notifier.bulkIncomplete(testHabitId1, [nonExistentDate]);
+        final count =
+            await notifier.bulkIncomplete(testHabitId1, [nonExistentDate]);
 
         expect(count, 0);
         expect(notifier.state.getCompletionCount(testHabitId1), 3);
       });
 
-      test('should fail with empty habit ID', () {
-        final count = notifier.bulkIncomplete('', [testDate1]);
+      test('should fail with empty habit ID', () async {
+        final count = await notifier.bulkIncomplete('', [testDate1]);
 
         expect(count, 0);
         expect(notifier.state.errorMessage, contains('cannot be empty'));
       });
 
-      test('should remove habit from map when all completions removed', () {
-        final count = notifier.bulkIncomplete(testHabitId1, [testDate1, testDate2, testDate3]);
+      test('should remove habit from map when all completions removed',
+          () async {
+        final count = await notifier
+            .bulkIncomplete(testHabitId1, [testDate1, testDate2, testDate3]);
 
         expect(count, 3);
         expect(notifier.state.completions.containsKey(testHabitId1), false);
       });
 
-      test('should handle non-existent habit gracefully', () {
-        final count = notifier.bulkIncomplete('non-existent-habit', [testDate1]);
+      test('should handle non-existent habit gracefully', () async {
+        final count =
+            await notifier.bulkIncomplete('non-existent-habit', [testDate1]);
 
         expect(count, 0);
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should normalize dates in bulk incomplete operation', () {
+      test('should normalize dates in bulk incomplete operation', () async {
         final datesWithTime = [
           DateTime(2025, 12, 17, 10, 30),
           DateTime(2025, 12, 18, 14, 45),
         ];
-        final count = notifier.bulkIncomplete(testHabitId1, datesWithTime);
+        final count =
+            await notifier.bulkIncomplete(testHabitId1, datesWithTime);
 
         expect(count, 2);
         expect(notifier.state.getCompletionCount(testHabitId1), 1);
@@ -317,19 +340,21 @@ void main() {
     });
 
     group('Date Normalization -', () {
-      test('should normalize dates with different time components to same date', () {
+      test('should normalize dates with different time components to same date',
+          () async {
         final morning = DateTime(2025, 12, 17, 8, 0, 0);
         final afternoon = DateTime(2025, 12, 17, 14, 30, 45);
         final evening = DateTime(2025, 12, 17, 23, 59, 59);
 
         notifier.markComplete(testHabitId1, morning);
-        
+
         expect(notifier.state.isCompletedOn(testHabitId1, afternoon), true);
         expect(notifier.state.isCompletedOn(testHabitId1, evening), true);
         expect(notifier.state.getCompletionCount(testHabitId1), 1);
       });
 
-      test('should treat dates with milliseconds and microseconds as same date', () {
+      test('should treat dates with milliseconds and microseconds as same date',
+          () async {
         final date1 = DateTime(2025, 12, 17, 12, 30, 45, 123, 456);
         final date2 = DateTime(2025, 12, 17, 18, 45, 30, 789, 123);
 
@@ -339,7 +364,8 @@ void main() {
         expect(notifier.state.getCompletionCount(testHabitId1), 1);
       });
 
-      test('should preserve different dates even with same time components', () {
+      test('should preserve different dates even with same time components',
+          () async {
         final date1 = DateTime(2025, 12, 17, 14, 30, 45);
         final date2 = DateTime(2025, 12, 18, 14, 30, 45);
         final date3 = DateTime(2025, 12, 19, 14, 30, 45);
@@ -349,7 +375,7 @@ void main() {
         expect(notifier.state.getCompletionCount(testHabitId1), 3);
       });
 
-      test('should handle UTC and local time correctly', () {
+      test('should handle UTC and local time correctly', () async {
         final localDate = DateTime(2025, 12, 17, 14, 30);
         final utcDate = DateTime.utc(2025, 12, 17, 14, 30);
 
@@ -366,7 +392,7 @@ void main() {
         notifier.bulkComplete(testHabitId2, [testDate1]);
       });
 
-      test('should remove all completions for a specific habit', () {
+      test('should remove all completions for a specific habit', () async {
         notifier.removeHabitCompletions(testHabitId1);
 
         expect(notifier.state.completions.containsKey(testHabitId1), false);
@@ -374,14 +400,14 @@ void main() {
         expect(notifier.state.getCompletionCount(testHabitId2), 1);
       });
 
-      test('should handle non-existent habit gracefully', () {
+      test('should handle non-existent habit gracefully', () async {
         notifier.removeHabitCompletions('non-existent-habit');
 
         expect(notifier.state.errorMessage, isNull);
         expect(notifier.state.totalCompletions, 4);
       });
 
-      test('should work when habit has no completions', () {
+      test('should work when habit has no completions', () async {
         notifier.removeHabitCompletions('habit-with-no-completions');
 
         expect(notifier.state.errorMessage, isNull);
@@ -389,7 +415,7 @@ void main() {
     });
 
     group('loadCompletions -', () {
-      test('should load completions from map', () {
+      test('should load completions from map', () async {
         final completions = {
           testHabitId1: {testDate1, testDate2},
           testHabitId2: {testDate3},
@@ -402,7 +428,7 @@ void main() {
         expect(notifier.state.totalCompletions, 3);
       });
 
-      test('should normalize dates when loading', () {
+      test('should normalize dates when loading', () async {
         final datesWithTime = {
           DateTime(2025, 12, 17, 10, 30),
           DateTime(2025, 12, 18, 14, 45),
@@ -411,28 +437,34 @@ void main() {
 
         notifier.loadCompletions(completions);
 
-        expect(notifier.state.isCompletedOn(testHabitId1, DateTime(2025, 12, 17)), true);
-        expect(notifier.state.isCompletedOn(testHabitId1, DateTime(2025, 12, 18)), true);
+        expect(
+            notifier.state.isCompletedOn(testHabitId1, DateTime(2025, 12, 17)),
+            true);
+        expect(
+            notifier.state.isCompletedOn(testHabitId1, DateTime(2025, 12, 18)),
+            true);
       });
 
-      test('should replace existing completions', () {
+      test('should replace existing completions', () async {
         notifier.markComplete(testHabitId1, testDate1);
-        
-        final newCompletions = {testHabitId2: {testDate2}};
+
+        final newCompletions = {
+          testHabitId2: {testDate2}
+        };
         notifier.loadCompletions(newCompletions);
 
         expect(notifier.state.completions.containsKey(testHabitId1), false);
         expect(notifier.state.getCompletionCount(testHabitId2), 1);
       });
 
-      test('should handle empty completions', () {
+      test('should handle empty completions', () async {
         notifier.loadCompletions({});
 
         expect(notifier.state.isEmpty, true);
         expect(notifier.state.totalCompletions, 0);
       });
 
-      test('should filter out habits with empty date sets', () {
+      test('should filter out habits with empty date sets', () async {
         final completions = {
           testHabitId1: {testDate1},
           testHabitId2: <DateTime>{}, // Empty set
@@ -446,7 +478,7 @@ void main() {
     });
 
     group('clearAllCompletions -', () {
-      test('should clear all completions', () {
+      test('should clear all completions', () async {
         notifier.bulkComplete(testHabitId1, [testDate1, testDate2]);
         notifier.bulkComplete(testHabitId2, [testDate3]);
 
@@ -457,7 +489,7 @@ void main() {
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should work on empty state', () {
+      test('should work on empty state', () async {
         notifier.clearAllCompletions();
 
         expect(notifier.state.isEmpty, true);
@@ -465,7 +497,7 @@ void main() {
     });
 
     group('clearError -', () {
-      test('should clear error message', () {
+      test('should clear error message', () async {
         notifier.markComplete('', testDate1); // Causes error
 
         expect(notifier.state.errorMessage, isNotNull);
@@ -475,27 +507,33 @@ void main() {
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should not affect completions when clearing error', () {
+      test('should not affect completions when clearing error', () async {
         notifier.markComplete(testHabitId1, testDate1);
         notifier.markComplete('', testDate2); // Causes error
 
-        final completionsBefore = notifier.state.getCompletionCount(testHabitId1);
+        final completionsBefore =
+            notifier.state.getCompletionCount(testHabitId1);
         notifier.clearError();
 
-        expect(notifier.state.getCompletionCount(testHabitId1), completionsBefore);
+        expect(
+            notifier.state.getCompletionCount(testHabitId1), completionsBefore);
       });
     });
 
     group('CompletionsState Helpers -', () {
-      test('getCompletionsForHabit should return empty set for non-existent habit', () {
-        final completions = notifier.state.getCompletionsForHabit('non-existent');
+      test(
+          'getCompletionsForHabit should return empty set for non-existent habit',
+          () async {
+        final completions =
+            notifier.state.getCompletionsForHabit('non-existent');
 
         expect(completions, isEmpty);
       });
 
-      test('getCompletionsForHabit should return all dates for habit', () {
+      test('getCompletionsForHabit should return all dates for habit',
+          () async {
         notifier.bulkComplete(testHabitId1, [testDate1, testDate2, testDate3]);
-        
+
         final completions = notifier.state.getCompletionsForHabit(testHabitId1);
 
         expect(completions.length, 3);
@@ -504,14 +542,15 @@ void main() {
         expect(completions.contains(testDate3), true);
       });
 
-      test('totalCompletions should sum all completions across habits', () {
+      test('totalCompletions should sum all completions across habits',
+          () async {
         notifier.bulkComplete(testHabitId1, [testDate1, testDate2]);
         notifier.bulkComplete(testHabitId2, [testDate1, testDate2, testDate3]);
 
         expect(notifier.state.totalCompletions, 5);
       });
 
-      test('isEmpty should be false when completions exist', () {
+      test('isEmpty should be false when completions exist', () async {
         notifier.markComplete(testHabitId1, testDate1);
 
         expect(notifier.state.isEmpty, false);
@@ -519,7 +558,7 @@ void main() {
     });
 
     group('State Immutability -', () {
-      test('state changes should not affect old references', () {
+      test('state changes should not affect old references', () async {
         notifier.markComplete(testHabitId1, testDate1);
         final state1 = notifier.state;
         final count1 = state1.totalCompletions;
@@ -532,7 +571,7 @@ void main() {
         expect(state1, isNot(same(state2)));
       });
 
-      test('all operations should create new state instances', () {
+      test('all operations should create new state instances', () async {
         notifier.markComplete(testHabitId1, testDate1);
         final state1 = notifier.state;
 
@@ -552,7 +591,7 @@ void main() {
     });
 
     group('Integration Tests -', () {
-      test('complete workflow with multiple habits and dates', () {
+      test('complete workflow with multiple habits and dates', () async {
         // Add completions for multiple habits
         notifier.markComplete(testHabitId1, testDate1);
         notifier.markComplete(testHabitId1, testDate2);
@@ -572,9 +611,9 @@ void main() {
         expect(notifier.state.totalCompletions, 2);
       });
 
-      test('should maintain consistency across operations', () {
+      test('should maintain consistency across operations', () async {
         final dates = List.generate(10, (i) => DateTime(2025, 12, i + 1));
-        
+
         notifier.bulkComplete(testHabitId1, dates);
         expect(notifier.state.getCompletionCount(testHabitId1), 10);
 

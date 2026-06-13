@@ -15,7 +15,7 @@ void main() {
     setUp(() {
       mockRepository = MockHabitsRepository();
       notifier = HabitsNotifier(mockRepository);
-      
+
       testHabit1 = Habit.create(
         id: 'habit-1',
         name: 'Morning Exercise',
@@ -36,7 +36,7 @@ void main() {
     });
 
     group('Initial State -', () {
-      test('should start with empty initial state', () {
+      test('should start with empty initial state', () async {
         expect(notifier.state.isEmpty, true);
         expect(notifier.state.habits, isEmpty);
         expect(notifier.state.habitsById, isEmpty);
@@ -46,8 +46,8 @@ void main() {
     });
 
     group('addHabit -', () {
-      test('should successfully add a valid habit', () {
-        final result = notifier.addHabit(testHabit1);
+      test('should successfully add a valid habit', () async {
+        final result = await notifier.addHabit(testHabit1);
 
         expect(result, true);
         expect(notifier.state.habits.length, 1);
@@ -56,9 +56,9 @@ void main() {
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should add multiple habits', () {
+      test('should add multiple habits', () async {
         notifier.addHabit(testHabit1);
-        final result = notifier.addHabit(testHabit2);
+        final result = await notifier.addHabit(testHabit2);
 
         expect(result, true);
         expect(notifier.state.habits.length, 2);
@@ -67,16 +67,16 @@ void main() {
         expect(notifier.state.habitsById[testHabit2.id], testHabit2);
       });
 
-      test('should fail to add habit with duplicate ID', () {
+      test('should fail to add habit with duplicate ID', () async {
         notifier.addHabit(testHabit1);
-        final result = notifier.addHabit(testHabit1);
+        final result = await notifier.addHabit(testHabit1);
 
         expect(result, false);
         expect(notifier.state.habits.length, 1);
         expect(notifier.state.errorMessage, contains('already exists'));
       });
 
-      test('should fail to add invalid habit (empty name)', () {
+      test('should fail to add invalid habit (empty name)', () async {
         final invalidHabit = Habit(
           id: 'invalid-1',
           name: '',
@@ -85,14 +85,14 @@ void main() {
           createdAt: DateTime.now(),
         );
 
-        final result = notifier.addHabit(invalidHabit);
+        final result = await notifier.addHabit(invalidHabit);
 
         expect(result, false);
         expect(notifier.state.habits, isEmpty);
         expect(notifier.state.errorMessage, contains('Invalid habit'));
       });
 
-      test('should fail to add invalid habit (negative target days)', () {
+      test('should fail to add invalid habit (negative target days)', () async {
         final invalidHabit = Habit(
           id: 'invalid-2',
           name: 'Test Habit',
@@ -102,14 +102,14 @@ void main() {
           createdAt: DateTime.now(),
         );
 
-        final result = notifier.addHabit(invalidHabit);
+        final result = await notifier.addHabit(invalidHabit);
 
         expect(result, false);
         expect(notifier.state.habits, isEmpty);
         expect(notifier.state.errorMessage, contains('Invalid habit'));
       });
 
-      test('should maintain state immutability', () {
+      test('should maintain state immutability', () async {
         final stateBefore = notifier.state;
         notifier.addHabit(testHabit1);
         final stateAfter = notifier.state;
@@ -125,32 +125,35 @@ void main() {
         notifier.addHabit(testHabit1);
       });
 
-      test('should successfully update an existing habit', () {
+      test('should successfully update an existing habit', () async {
         final updatedHabit = testHabit1.copyWith(
           name: 'Evening Exercise',
           description: 'Updated description',
         );
 
-        final result = notifier.updateHabit(testHabit1.id, updatedHabit);
+        final result = await notifier.updateHabit(testHabit1.id, updatedHabit);
 
         expect(result, true);
         expect(notifier.state.habits.length, 1);
-        expect(notifier.state.habitsById[testHabit1.id]?.name, 'Evening Exercise');
-        expect(notifier.state.habitsById[testHabit1.id]?.description, 'Updated description');
+        expect(
+            notifier.state.habitsById[testHabit1.id]?.name, 'Evening Exercise');
+        expect(notifier.state.habitsById[testHabit1.id]?.description,
+            'Updated description');
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should fail to update non-existent habit', () {
-        final result = notifier.updateHabit('non-existent-id', testHabit2);
+      test('should fail to update non-existent habit', () async {
+        final result =
+            await notifier.updateHabit('non-existent-id', testHabit2);
 
         expect(result, false);
         expect(notifier.state.errorMessage, contains('not found'));
       });
 
-      test('should fail to update with invalid habit data', () {
+      test('should fail to update with invalid habit data', () async {
         final invalidHabit = testHabit1.copyWith(name: '');
 
-        final result = notifier.updateHabit(testHabit1.id, invalidHabit);
+        final result = await notifier.updateHabit(testHabit1.id, invalidHabit);
 
         expect(result, false);
         expect(notifier.state.errorMessage, contains('Invalid habit'));
@@ -158,16 +161,17 @@ void main() {
         expect(notifier.state.habitsById[testHabit1.id]?.name, testHabit1.name);
       });
 
-      test('should fail to update with mismatched ID', () {
+      test('should fail to update with mismatched ID', () async {
         final mismatchedHabit = testHabit1.copyWith(id: 'different-id');
 
-        final result = notifier.updateHabit(testHabit1.id, mismatchedHabit);
+        final result =
+            await notifier.updateHabit(testHabit1.id, mismatchedHabit);
 
         expect(result, false);
         expect(notifier.state.errorMessage, contains('Cannot change habit ID'));
       });
 
-      test('should maintain state immutability on update', () {
+      test('should maintain state immutability on update', () async {
         final stateBefore = notifier.state;
         final updatedHabit = testHabit1.copyWith(name: 'Updated Name');
         notifier.updateHabit(testHabit1.id, updatedHabit);
@@ -178,7 +182,7 @@ void main() {
         expect(stateAfter.habitsById[testHabit1.id]?.name, 'Updated Name');
       });
 
-      test('should maintain Map and List consistency after update', () {
+      test('should maintain Map and List consistency after update', () async {
         final updatedHabit = testHabit1.copyWith(name: 'Updated Name');
         notifier.updateHabit(testHabit1.id, updatedHabit);
 
@@ -196,8 +200,8 @@ void main() {
         notifier.addHabit(testHabit2);
       });
 
-      test('should successfully delete an existing habit', () {
-        final result = notifier.deleteHabit(testHabit1.id);
+      test('should successfully delete an existing habit', () async {
+        final result = await notifier.deleteHabit(testHabit1.id);
 
         expect(result, true);
         expect(notifier.state.habits.length, 1);
@@ -206,15 +210,15 @@ void main() {
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should fail to delete non-existent habit', () {
-        final result = notifier.deleteHabit('non-existent-id');
+      test('should fail to delete non-existent habit', () async {
+        final result = await notifier.deleteHabit('non-existent-id');
 
         expect(result, false);
         expect(notifier.state.habits.length, 2);
         expect(notifier.state.errorMessage, contains('not found'));
       });
 
-      test('should delete all habits', () {
+      test('should delete all habits', () async {
         notifier.deleteHabit(testHabit1.id);
         notifier.deleteHabit(testHabit2.id);
 
@@ -222,7 +226,7 @@ void main() {
         expect(notifier.state.habitsById, isEmpty);
       });
 
-      test('should maintain state immutability on delete', () {
+      test('should maintain state immutability on delete', () async {
         final stateBefore = notifier.state;
         notifier.deleteHabit(testHabit1.id);
         final stateAfter = notifier.state;
@@ -232,7 +236,7 @@ void main() {
         expect(stateAfter.habits.length, 1);
       });
 
-      test('should maintain Map and List consistency after delete', () {
+      test('should maintain Map and List consistency after delete', () async {
         notifier.deleteHabit(testHabit1.id);
 
         expect(notifier.state.habits.length, notifier.state.habitsById.length);
@@ -246,8 +250,8 @@ void main() {
         notifier.addHabit(testHabit1);
       });
 
-      test('should successfully archive an active habit', () {
-        final result = notifier.archiveHabit(testHabit1.id);
+      test('should successfully archive an active habit', () async {
+        final result = await notifier.archiveHabit(testHabit1.id);
 
         expect(result, true);
         expect(notifier.state.habitsById[testHabit1.id]?.isArchived, true);
@@ -256,22 +260,22 @@ void main() {
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should fail to archive non-existent habit', () {
-        final result = notifier.archiveHabit('non-existent-id');
+      test('should fail to archive non-existent habit', () async {
+        final result = await notifier.archiveHabit('non-existent-id');
 
         expect(result, false);
         expect(notifier.state.errorMessage, contains('not found'));
       });
 
-      test('should fail to archive already archived habit', () {
+      test('should fail to archive already archived habit', () async {
         notifier.archiveHabit(testHabit1.id);
-        final result = notifier.archiveHabit(testHabit1.id);
+        final result = await notifier.archiveHabit(testHabit1.id);
 
         expect(result, false);
         expect(notifier.state.errorMessage, contains('already archived'));
       });
 
-      test('should maintain state immutability on archive', () {
+      test('should maintain state immutability on archive', () async {
         final stateBefore = notifier.state;
         notifier.archiveHabit(testHabit1.id);
         final stateAfter = notifier.state;
@@ -281,7 +285,7 @@ void main() {
         expect(stateAfter.habitsById[testHabit1.id]?.isArchived, true);
       });
 
-      test('should keep habit in list but mark as archived', () {
+      test('should keep habit in list but mark as archived', () async {
         notifier.archiveHabit(testHabit1.id);
 
         expect(notifier.state.habits.length, 1);
@@ -295,8 +299,8 @@ void main() {
         notifier.archiveHabit(testHabit1.id);
       });
 
-      test('should successfully unarchive an archived habit', () {
-        final result = notifier.unarchiveHabit(testHabit1.id);
+      test('should successfully unarchive an archived habit', () async {
+        final result = await notifier.unarchiveHabit(testHabit1.id);
 
         expect(result, true);
         expect(notifier.state.habitsById[testHabit1.id]?.isArchived, false);
@@ -305,22 +309,22 @@ void main() {
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should fail to unarchive non-existent habit', () {
-        final result = notifier.unarchiveHabit('non-existent-id');
+      test('should fail to unarchive non-existent habit', () async {
+        final result = await notifier.unarchiveHabit('non-existent-id');
 
         expect(result, false);
         expect(notifier.state.errorMessage, contains('not found'));
       });
 
-      test('should fail to unarchive already active habit', () {
+      test('should fail to unarchive already active habit', () async {
         notifier.unarchiveHabit(testHabit1.id);
-        final result = notifier.unarchiveHabit(testHabit1.id);
+        final result = await notifier.unarchiveHabit(testHabit1.id);
 
         expect(result, false);
         expect(notifier.state.errorMessage, contains('already active'));
       });
 
-      test('should maintain state immutability on unarchive', () {
+      test('should maintain state immutability on unarchive', () async {
         final stateBefore = notifier.state;
         notifier.unarchiveHabit(testHabit1.id);
         final stateAfter = notifier.state;
@@ -332,7 +336,7 @@ void main() {
     });
 
     group('Error Handling -', () {
-      test('should clear error message', () {
+      test('should clear error message', () async {
         notifier.addHabit(testHabit1);
         notifier.addHabit(testHabit1); // Duplicate, causes error
 
@@ -343,7 +347,7 @@ void main() {
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should handle errors in addHabit gracefully', () {
+      test('should handle errors in addHabit gracefully', () async {
         final invalidHabit = Habit(
           id: 'test',
           name: '',
@@ -352,14 +356,14 @@ void main() {
           createdAt: DateTime.now(),
         );
 
-        final result = notifier.addHabit(invalidHabit);
+        final result = await notifier.addHabit(invalidHabit);
 
         expect(result, false);
         expect(notifier.state.errorMessage, isNotNull);
         expect(notifier.state.habits, isEmpty);
       });
 
-      test('should preserve state after failed operation', () {
+      test('should preserve state after failed operation', () async {
         notifier.addHabit(testHabit1);
         final stateBeforeError = notifier.state;
 
@@ -371,7 +375,7 @@ void main() {
     });
 
     group('loadHabits -', () {
-      test('should load habits from list', () {
+      test('should load habits from list', () async {
         final habits = [testHabit1, testHabit2];
         notifier.loadHabits(habits);
 
@@ -381,7 +385,7 @@ void main() {
         expect(notifier.state.habitsById[testHabit2.id], testHabit2);
       });
 
-      test('should replace existing habits when loading', () {
+      test('should replace existing habits when loading', () async {
         notifier.addHabit(testHabit1);
         final newHabits = [testHabit2];
         notifier.loadHabits(newHabits);
@@ -391,7 +395,7 @@ void main() {
         expect(notifier.state.habitsById.containsKey(testHabit2.id), true);
       });
 
-      test('should load empty list', () {
+      test('should load empty list', () async {
         notifier.addHabit(testHabit1);
         notifier.loadHabits([]);
 
@@ -401,7 +405,7 @@ void main() {
     });
 
     group('clearAllHabits -', () {
-      test('should clear all habits', () {
+      test('should clear all habits', () async {
         notifier.addHabit(testHabit1);
         notifier.addHabit(testHabit2);
 
@@ -412,7 +416,7 @@ void main() {
         expect(notifier.state.errorMessage, isNull);
       });
 
-      test('should work on empty state', () {
+      test('should work on empty state', () async {
         notifier.clearAllHabits();
 
         expect(notifier.state.habits, isEmpty);
@@ -421,7 +425,9 @@ void main() {
     });
 
     group('State Immutability -', () {
-      test('habits list should be immutable - state changes should not affect old references', () {
+      test(
+          'habits list should be immutable - state changes should not affect old references',
+          () async {
         notifier.addHabit(testHabit1);
         final habitsList = notifier.state.habits;
         final habitsLength = habitsList.length;
@@ -435,7 +441,9 @@ void main() {
         expect(habitsList, isNot(same(notifier.state.habits)));
       });
 
-      test('habitsById map should be immutable - state changes should not affect old references', () {
+      test(
+          'habitsById map should be immutable - state changes should not affect old references',
+          () async {
         notifier.addHabit(testHabit1);
         final habitsMap = notifier.state.habitsById;
         final mapLength = habitsMap.length;
@@ -449,14 +457,15 @@ void main() {
         expect(habitsMap, isNot(same(notifier.state.habitsById)));
       });
 
-      test('all operations should create new state instances', () {
+      test('all operations should create new state instances', () async {
         notifier.addHabit(testHabit1);
         final state1 = notifier.state;
 
         notifier.addHabit(testHabit2);
         final state2 = notifier.state;
 
-        notifier.updateHabit(testHabit1.id, testHabit1.copyWith(name: 'Updated'));
+        notifier.updateHabit(
+            testHabit1.id, testHabit1.copyWith(name: 'Updated'));
         final state3 = notifier.state;
 
         notifier.archiveHabit(testHabit1.id);
@@ -474,9 +483,9 @@ void main() {
     });
 
     group('Integration Tests -', () {
-      test('complete CRUD workflow', () {
+      test('complete CRUD workflow', () async {
         // Create
-        expect(notifier.addHabit(testHabit1), true);
+        expect(await notifier.addHabit(testHabit1), true);
         expect(notifier.state.habits.length, 1);
 
         // Read
@@ -484,15 +493,15 @@ void main() {
 
         // Update
         final updated = testHabit1.copyWith(name: 'Updated Habit');
-        expect(notifier.updateHabit(testHabit1.id, updated), true);
+        expect(await notifier.updateHabit(testHabit1.id, updated), true);
         expect(notifier.state.habitsById[testHabit1.id]?.name, 'Updated Habit');
 
         // Delete
-        expect(notifier.deleteHabit(testHabit1.id), true);
+        expect(await notifier.deleteHabit(testHabit1.id), true);
         expect(notifier.state.habits, isEmpty);
       });
 
-      test('archive and unarchive workflow', () {
+      test('archive and unarchive workflow', () async {
         notifier.addHabit(testHabit1);
         expect(notifier.state.activeHabits.length, 1);
 
@@ -505,11 +514,11 @@ void main() {
         expect(notifier.state.archivedHabits, isEmpty);
       });
 
-      test('complex state management scenario', () {
+      test('complex state management scenario', () async {
         // Add multiple habits
         notifier.addHabit(testHabit1);
         notifier.addHabit(testHabit2);
-        
+
         final testHabit3 = Habit.create(
           id: 'habit-3',
           name: 'Meditation',
@@ -526,7 +535,8 @@ void main() {
         expect(notifier.state.archivedCount, 1);
 
         // Update one
-        notifier.updateHabit(testHabit1.id, testHabit1.copyWith(name: 'New Name'));
+        notifier.updateHabit(
+            testHabit1.id, testHabit1.copyWith(name: 'New Name'));
         expect(notifier.state.habitsById[testHabit1.id]?.name, 'New Name');
 
         // Delete one

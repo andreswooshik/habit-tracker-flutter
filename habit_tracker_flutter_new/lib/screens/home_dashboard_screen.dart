@@ -6,26 +6,33 @@ import 'package:habit_tracker_flutter_new/screens/analytics_screen.dart';
 import 'package:habit_tracker_flutter_new/widgets/dashboard/dashboard.dart';
 
 class HomeDashboardScreen extends ConsumerWidget {
-  const HomeDashboardScreen({super.key});
+  final bool showAppBar;
+
+  const HomeDashboardScreen({
+    super.key,
+    this.showAppBar = true,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('TrackIt!'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.analytics),
-            onPressed: () => _navigateToAnalytics(context),
-            tooltip: 'Analytics',
-          ),
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: () => _navigateToHabitList(context),
-            tooltip: 'View Habits',
-          ),
-        ],
-      ),
+      appBar: showAppBar
+          ? AppBar(
+              title: const Text('TrackIt!'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.analytics),
+                  onPressed: () => _navigateToAnalytics(context),
+                  tooltip: 'Analytics',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.calendar_today),
+                  onPressed: () => _navigateToHabitList(context),
+                  tooltip: 'View Habits',
+                ),
+              ],
+            )
+          : null,
       body: RefreshIndicator(
         onRefresh: () async {
           // Refresh providers
@@ -36,39 +43,44 @@ class HomeDashboardScreen extends ConsumerWidget {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Today's Summary Card
-              const TodaysSummaryCard(),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 960),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Today's Summary Card
+                  const TodaysSummaryCard(),
 
-              const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-              // Weekly Performance Chart
-              const WeeklyPerformanceChart(),
+                  // Weekly Performance Chart
+                  const WeeklyPerformanceChart(),
 
-              const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-              // Achievements Showcase
-              const AchievementsShowcase(),
+                  // Achievements Showcase
+                  const AchievementsShowcase(),
 
-              const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-              // Consistency Tracker
-              const ConsistencyTracker(),
+                  // Consistency Tracker
+                  const ConsistencyTracker(),
 
-              const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-              // Quick Stats Grid
-              const QuickStatsGrid(),
+                  // Quick Stats Grid
+                  const QuickStatsGrid(),
 
-              const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-              // Today's Habits List
-              const TodaysHabitsList(),
+                  // Today's Habits List
+                  const TodaysHabitsList(),
 
-              const SizedBox(height: 32),
-            ],
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
           ),
         ),
       ),
