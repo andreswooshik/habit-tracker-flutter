@@ -4,12 +4,13 @@ import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/models/habit_frequency.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
+import '../mocks/provider_container.dart';
 
 void main() {
   late ProviderContainer container;
 
   setUp(() {
-    container = ProviderContainer();
+    container = createTestProviderContainer();
   });
 
   tearDown(() {
@@ -45,7 +46,7 @@ void main() {
       container.read(selectedDateProvider.notifier).state = monday;
 
       final todaysHabits = container.read(todaysHabitsProvider);
-      
+
       // Both should be scheduled on Monday
       expect(todaysHabits, hasLength(2));
       expect(todaysHabits.any((h) => h.id == '1'), isTrue);
@@ -68,7 +69,7 @@ void main() {
       container.read(selectedDateProvider.notifier).state = saturday;
 
       final todaysHabits = container.read(todaysHabitsProvider);
-      
+
       // Should be empty - weekdays habit not scheduled on Saturday
       expect(todaysHabits, isEmpty);
     });
@@ -89,12 +90,12 @@ void main() {
 
       container.read(habitsProvider.notifier).addHabit(activeHabit);
       container.read(habitsProvider.notifier).addHabit(habitToArchive);
-      
+
       // Archive the second habit
       container.read(habitsProvider.notifier).archiveHabit('2');
 
       final todaysHabits = container.read(todaysHabitsProvider);
-      
+
       expect(todaysHabits, hasLength(1));
       expect(todaysHabits.first.id, equals('1'));
       expect(todaysHabits.first.isArchived, isFalse);
@@ -132,12 +133,12 @@ void main() {
       container.read(completionsProvider.notifier).markComplete('2', today);
 
       final todaysHabits = container.read(todaysHabitsProvider);
-      
+
       // Should be sorted: incomplete (alphabetically), then completed
       expect(todaysHabits, hasLength(3));
       expect(todaysHabits[0].name, equals('Mmm Middle')); // Incomplete
-      expect(todaysHabits[1].name, equals('Zzz Last'));   // Incomplete
-      expect(todaysHabits[2].name, equals('Aaa First'));  // Completed (last)
+      expect(todaysHabits[1].name, equals('Zzz Last')); // Incomplete
+      expect(todaysHabits[2].name, equals('Aaa First')); // Completed (last)
     });
 
     test('sorts alphabetically within same completion status', () {
@@ -166,7 +167,7 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(habitA);
 
       final todaysHabits = container.read(todaysHabitsProvider);
-      
+
       // Should be sorted alphabetically
       expect(todaysHabits, hasLength(3));
       expect(todaysHabits[0].name, equals('Aaa'));
@@ -327,13 +328,13 @@ void main() {
       // Add 3 daily habits
       for (int i = 1; i <= 3; i++) {
         container.read(habitsProvider.notifier).addHabit(
-          Habit.create(
-            id: '$i',
-            name: 'Habit $i',
-            category: HabitCategory.health,
-            frequency: HabitFrequency.everyDay,
-          ),
-        );
+              Habit.create(
+                id: '$i',
+                name: 'Habit $i',
+                category: HabitCategory.health,
+                frequency: HabitFrequency.everyDay,
+              ),
+            );
       }
 
       final count = container.read(todaysHabitsCountProvider);
@@ -347,13 +348,13 @@ void main() {
       // Add 3 daily habits
       for (int i = 1; i <= 3; i++) {
         container.read(habitsProvider.notifier).addHabit(
-          Habit.create(
-            id: '$i',
-            name: 'Habit $i',
-            category: HabitCategory.health,
-            frequency: HabitFrequency.everyDay,
-          ),
-        );
+              Habit.create(
+                id: '$i',
+                name: 'Habit $i',
+                category: HabitCategory.health,
+                frequency: HabitFrequency.everyDay,
+              ),
+            );
       }
 
       // Complete 2 of them
@@ -371,13 +372,13 @@ void main() {
       // Add 4 daily habits
       for (int i = 1; i <= 4; i++) {
         container.read(habitsProvider.notifier).addHabit(
-          Habit.create(
-            id: '$i',
-            name: 'Habit $i',
-            category: HabitCategory.health,
-            frequency: HabitFrequency.everyDay,
-          ),
-        );
+              Habit.create(
+                id: '$i',
+                name: 'Habit $i',
+                category: HabitCategory.health,
+                frequency: HabitFrequency.everyDay,
+              ),
+            );
       }
 
       // Complete 3 of them
@@ -401,13 +402,13 @@ void main() {
       // Add 2 daily habits
       for (int i = 1; i <= 2; i++) {
         container.read(habitsProvider.notifier).addHabit(
-          Habit.create(
-            id: '$i',
-            name: 'Habit $i',
-            category: HabitCategory.health,
-            frequency: HabitFrequency.everyDay,
-          ),
-        );
+              Habit.create(
+                id: '$i',
+                name: 'Habit $i',
+                category: HabitCategory.health,
+                frequency: HabitFrequency.everyDay,
+              ),
+            );
       }
 
       // Complete both

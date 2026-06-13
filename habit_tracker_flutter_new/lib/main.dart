@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:habit_tracker_flutter_new/config/app_theme.dart';
-import 'package:habit_tracker_flutter_new/screens/home_dashboard_screen.dart';
+import 'package:habit_tracker_flutter_new/providers/repository_providers.dart';
+import 'package:habit_tracker_flutter_new/screens/app_shell_screen.dart';
 import 'package:habit_tracker_flutter_new/repositories/hive/hive_habits_repository.dart';
 import 'package:habit_tracker_flutter_new/repositories/hive/hive_completions_repository.dart';
 import 'package:habit_tracker_flutter_new/services/mock_data_loader.dart';
 
-const bool useMockData = false; // 👈 Change this to toggle demo/production mode
+const bool useMockData = false; // Change this to toggle demo/production mode
 // ============================================================================
 
 void main() async {
@@ -33,7 +34,7 @@ void main() async {
     await mockDataLoader.loadIfNeeded(
       habitCount: 8,
       daysOfHistory: 60,
-      forceClear: true, // TEMPORARY: Remove after first run
+      forceClear: false,
     );
   }
 
@@ -61,17 +62,7 @@ class MyApp extends StatelessWidget {
       title: appTitle,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const HomeDashboardScreen(),
+      home: const AppShellScreen(),
     );
   }
 }
-
-// Repository providers
-final habitsRepositoryProvider = Provider<HiveHabitsRepository>((ref) {
-  throw UnimplementedError('Repository must be overridden in ProviderScope');
-});
-
-final completionsRepositoryProvider =
-    Provider<HiveCompletionsRepository>((ref) {
-  throw UnimplementedError('Repository must be overridden in ProviderScope');
-});

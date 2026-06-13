@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
+import 'package:habit_tracker_flutter_new/screens/add_edit_habit_screen.dart';
 import 'package:habit_tracker_flutter_new/widgets/habit_card.dart';
 import 'package:habit_tracker_flutter_new/widgets/animations/animations.dart';
+import 'package:habit_tracker_flutter_new/widgets/onboarding/empty_onboarding_card.dart';
 
 /// Widget that displays the list of habits scheduled for today
 class TodaysHabitsList extends ConsumerWidget {
@@ -14,8 +16,16 @@ class TodaysHabitsList extends ConsumerWidget {
     final selectedDate = ref.watch(selectedDateProvider);
     final completedCount = ref.watch(completedTodayCountProvider);
     final totalCount = ref.watch(todaysHabitsCountProvider);
+    final hasAnyActiveHabits =
+        ref.watch(habitsProvider).activeHabits.isNotEmpty;
 
     if (todaysHabits.isEmpty) {
+      if (!hasAnyActiveHabits) {
+        return EmptyOnboardingCard(
+          onCreateCustom: () => _navigateToAddHabit(context),
+        );
+      }
+
       return Card(
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -178,7 +188,7 @@ class TodaysHabitsList extends ConsumerWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          '🎉 Perfect! All habits completed today!',
+                          'Perfect! All habits completed today!',
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: Colors.green.shade900,
@@ -193,6 +203,14 @@ class TodaysHabitsList extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _navigateToAddHabit(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AddEditHabitScreen(),
       ),
     );
   }

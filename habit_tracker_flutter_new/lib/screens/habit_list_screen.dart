@@ -2,18 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/widgets/habit_card.dart';
+import 'package:habit_tracker_flutter_new/widgets/onboarding/empty_onboarding_card.dart';
 import 'package:habit_tracker_flutter_new/screens/add_edit_habit_screen.dart';
 import 'package:intl/intl.dart';
 
 /// Main screen displaying the list of habits for the selected date
-/// 
+///
 /// Features:
 /// - Displays today's habits with completion status
 /// - Shows progress statistics
 /// - Allows completion toggle
 /// - Filters and sorts habits
 class HabitListScreen extends ConsumerWidget {
-  const HabitListScreen({super.key});
+  final bool showAppBar;
+
+  const HabitListScreen({
+    super.key,
+    this.showAppBar = true,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,19 +28,21 @@ class HabitListScreen extends ConsumerWidget {
     final todaysProgress = ref.watch(todaysProgressProvider);
     final completedCount = ref.watch(completedTodayCountProvider);
     final totalCount = ref.watch(todaysHabitsCountProvider);
+    final hasAnyActiveHabits =
+        ref.watch(habitsProvider).activeHabits.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Habit Tracker'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              // TODO: Navigate to AddEditHabitScreen
-            },
-          ),
-        ],
-      ),
+      appBar: showAppBar
+          ? AppBar(
+              title: const Text('Habit Tracker'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () => _navigateToAddHabit(context),
+                ),
+              ],
+            )
+          : null,
       body: Column(
         children: [
           // Date selector and progress card
@@ -47,11 +55,15 @@ class HabitListScreen extends ConsumerWidget {
               ref.read(selectedDateProvider.notifier).state = date;
             },
           ),
-          
+
           // Habits list
           Expanded(
             child: todaysHabits.isEmpty
-                ? _EmptyState(selectedDate: selectedDate)
+                ? _EmptyState(
+                    selectedDate: selectedDate,
+                    hasAnyActiveHabits: hasAnyActiveHabits,
+                    onCreateCustom: () => _navigateToAddHabit(context),
+                  )
                 : ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: todaysHabits.length,
@@ -67,15 +79,17 @@ class HabitListScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const AddEditHabitScreen(),
-            ),
-          );
-        },
+        onPressed: () => _navigateToAddHabit(context),
         icon: const Icon(Icons.add),
         label: const Text('New Habit'),
+      ),
+    );
+  }
+
+  void _navigateToAddHabit(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AddEditHabitScreen(),
       ),
     );
   }
@@ -100,9 +114,8 @@ class _DateProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isToday = _isToday(selectedDate);
-    final dateText = isToday 
-        ? 'Today' 
-        : DateFormat('EEEE, MMM d').format(selectedDate);
+    final dateText =
+        isToday ? 'Today' : DateFormat('EEEE, MMM d').format(selectedDate);
 
     return Card(
       margin: const EdgeInsets.all(16),
@@ -117,7 +130,8 @@ class _DateProgressCard extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.chevron_left),
                   onPressed: () {
-                    onDateChanged(selectedDate.subtract(const Duration(days: 1)));
+                    onDateChanged(
+                        selectedDate.subtract(const Duration(days: 1)));
                   },
                 ),
                 InkWell(
@@ -133,7 +147,8 @@ class _DateProgressCard extends StatelessWidget {
                     }
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Text(
                       dateText,
                       style: Theme.of(context).textTheme.titleLarge,
@@ -148,9 +163,9 @@ class _DateProgressCard extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Progress indicator
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
@@ -163,24 +178,24 @@ class _DateProgressCard extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Progress text
             Text(
               '$completedCount of $totalCount habits completed',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+                    color: Colors.grey[600],
+                  ),
             ),
-            
+
             // Percentage
             Text(
               '${(progress * 100).toStringAsFixed(0)}%',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: _getProgressColor(progress),
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: _getProgressColor(progress),
+                  ),
             ),
           ],
         ),
@@ -191,8 +206,8 @@ class _DateProgressCard extends StatelessWidget {
   bool _isToday(DateTime date) {
     final now = DateTime.now();
     return date.year == now.year &&
-           date.month == now.month &&
-           date.day == now.day;
+        date.month == now.month &&
+        date.day == now.day;
   }
 
   Color _getProgressColor(double progress) {
@@ -202,18 +217,31 @@ class _DateProgressCard extends StatelessWidget {
   }
 }
 
-
-
 /// Empty state when no habits scheduled for the day
 class _EmptyState extends StatelessWidget {
   final DateTime selectedDate;
+  final bool hasAnyActiveHabits;
+  final VoidCallback onCreateCustom;
 
-  const _EmptyState({required this.selectedDate});
+  const _EmptyState({
+    required this.selectedDate,
+    required this.hasAnyActiveHabits,
+    required this.onCreateCustom,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isToday = _isToday(selectedDate);
-    
+
+    if (!hasAnyActiveHabits) {
+      return ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          EmptyOnboardingCard(onCreateCustom: onCreateCustom),
+        ],
+      );
+    }
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -227,12 +255,12 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              isToday 
+              isToday
                   ? 'No habits scheduled for today'
                   : 'No habits scheduled for this day',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.grey[600],
-              ),
+                    color: Colors.grey[600],
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
@@ -241,8 +269,8 @@ class _EmptyState extends StatelessWidget {
                   ? 'Tap the + button to create your first habit'
                   : 'Check another date or create a new habit',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
-              ),
+                    color: Colors.grey[500],
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -254,7 +282,7 @@ class _EmptyState extends StatelessWidget {
   bool _isToday(DateTime date) {
     final now = DateTime.now();
     return date.year == now.year &&
-           date.month == now.month &&
-           date.day == now.day;
+        date.month == now.month &&
+        date.day == now.day;
   }
 }

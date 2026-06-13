@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker_flutter_new/models/habit.dart';
-import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/services/category_style_service.dart';
 
 class HabitDetailAppBar extends StatelessWidget {

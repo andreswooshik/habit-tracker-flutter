@@ -47,10 +47,11 @@ void main() {
     test('consecutive 5 days shows streak of 5', () {
       final today = DateTime.now();
       final completions = <DateTime>{};
-      
+
       for (int i = 0; i < 5; i++) {
         completions.add(
-          DateTime(today.year, today.month, today.day).subtract(Duration(days: i)),
+          DateTime(today.year, today.month, today.day)
+              .subtract(Duration(days: i)),
         );
       }
 
@@ -64,10 +65,11 @@ void main() {
     test('30-day perfect streak', () {
       final today = DateTime.now();
       final completions = <DateTime>{};
-      
+
       for (int i = 0; i < 30; i++) {
         completions.add(
-          DateTime(today.year, today.month, today.day).subtract(Duration(days: i)),
+          DateTime(today.year, today.month, today.day)
+              .subtract(Duration(days: i)),
         );
       }
 
@@ -81,20 +83,22 @@ void main() {
     test('broken streak shows only current streak', () {
       final today = DateTime.now();
       final completions = <DateTime>{};
-      
+
       // Current streak: last 3 days
       for (int i = 0; i < 3; i++) {
         completions.add(
-          DateTime(today.year, today.month, today.day).subtract(Duration(days: i)),
+          DateTime(today.year, today.month, today.day)
+              .subtract(Duration(days: i)),
         );
       }
-      
+
       // Gap on day 4 (not added)
-      
+
       // Previous streak: 5 days (days 5-9)
       for (int i = 5; i <= 9; i++) {
         completions.add(
-          DateTime(today.year, today.month, today.day).subtract(Duration(days: i)),
+          DateTime(today.year, today.month, today.day)
+              .subtract(Duration(days: i)),
         );
       }
 
@@ -109,7 +113,7 @@ void main() {
       final today = DateTime.now();
       final yesterday = DateTime(today.year, today.month, today.day)
           .subtract(const Duration(days: 1));
-      
+
       final completions = {yesterday};
 
       final streak = calculator.calculateStreak(dailyHabit, completions);
@@ -118,17 +122,18 @@ void main() {
       expect(streak.hasActiveStreak, true);
     });
 
-    test('2 days ago counts as streak of 1', () {
+    test('2 days ago is no longer an active daily streak', () {
       final today = DateTime.now();
       final twoDaysAgo = DateTime(today.year, today.month, today.day)
           .subtract(const Duration(days: 2));
-      
+
       final completions = {twoDaysAgo};
 
       final streak = calculator.calculateStreak(dailyHabit, completions);
 
-      expect(streak.current, 1);
-      expect(streak.hasActiveStreak, true); // Has a streak (even if old)
+      expect(streak.current, 0);
+      expect(streak.longest, 1);
+      expect(streak.hasActiveStreak, false);
     });
 
     test('ignores time component in dates', () {
@@ -161,14 +166,14 @@ void main() {
       // Start from a known Monday
       final monday = DateTime(2024, 1, 1); // Jan 1, 2024 is Monday
       final completions = <DateTime>{};
-      
+
       for (int i = 0; i < 5; i++) {
         completions.add(monday.add(Duration(days: i)));
       }
 
       final streak = calculator.calculateStreak(weekdayHabit, completions);
 
-      expect(streak.current, 5);
+      expect(streak.current, 0);
       expect(streak.longest, 5);
     });
 
@@ -183,7 +188,8 @@ void main() {
 
       final streak = calculator.calculateStreak(weekdayHabit, completions);
 
-      expect(streak.current, 2); // Only Mon, Tue count
+      expect(streak.current, 0);
+      expect(streak.longest, 2); // Only Mon, Tue count
     });
 
     test('streak continues across weekend', () {
@@ -201,7 +207,8 @@ void main() {
 
       final streak = calculator.calculateStreak(weekdayHabit, completions);
 
-      expect(streak.current, 7); // All 7 weekdays
+      expect(streak.current, 0);
+      expect(streak.longest, 7); // All 7 weekdays
     });
 
     test('missing Friday breaks weekday streak', () {
@@ -217,7 +224,8 @@ void main() {
 
       final streak = calculator.calculateStreak(weekdayHabit, completions);
 
-      expect(streak.current, 1); // Only next Monday
+      expect(streak.current, 0);
+      expect(streak.longest, 4); // Mon-Thu before the missed Friday
     });
   });
 
@@ -242,7 +250,8 @@ void main() {
 
       final streak = calculator.calculateStreak(weekendHabit, completions);
 
-      expect(streak.current, 2);
+      expect(streak.current, 0);
+      expect(streak.longest, 2);
     });
 
     test('weekday completions are ignored', () {
@@ -254,7 +263,8 @@ void main() {
 
       final streak = calculator.calculateStreak(weekendHabit, completions);
 
-      expect(streak.current, 1);
+      expect(streak.current, 0);
+      expect(streak.longest, 1);
     });
 
     test('streak continues across week', () {
@@ -269,7 +279,8 @@ void main() {
 
       final streak = calculator.calculateStreak(weekendHabit, completions);
 
-      expect(streak.current, 4); // 2 weekends
+      expect(streak.current, 0);
+      expect(streak.longest, 4); // 2 weekends
     });
   });
 
@@ -297,7 +308,8 @@ void main() {
 
       final streak = calculator.calculateStreak(customHabit, completions);
 
-      expect(streak.current, 3);
+      expect(streak.current, 0);
+      expect(streak.longest, 3);
     });
 
     test('non-custom day completions are ignored', () {
@@ -310,7 +322,8 @@ void main() {
 
       final streak = calculator.calculateStreak(customHabit, completions);
 
-      expect(streak.current, 2); // Mon, Wed
+      expect(streak.current, 0);
+      expect(streak.longest, 2); // Mon, Wed
     });
 
     test('missing custom day breaks streak', () {
@@ -323,7 +336,8 @@ void main() {
 
       final streak = calculator.calculateStreak(customHabit, completions);
 
-      expect(streak.current, 1); // Only Friday
+      expect(streak.current, 0);
+      expect(streak.longest, 1); // Only Friday
     });
   });
 
@@ -343,7 +357,7 @@ void main() {
     test('allows one missed day with grace period', () {
       final today = DateTime.now();
       final normalized = DateTime(today.year, today.month, today.day);
-      
+
       final completions = <DateTime>{
         normalized, // Today
         normalized.subtract(const Duration(days: 1)), // Yesterday
@@ -360,7 +374,7 @@ void main() {
     test('grace period does not allow two consecutive misses', () {
       final today = DateTime.now();
       final normalized = DateTime(today.year, today.month, today.day);
-      
+
       final completions = <DateTime>{
         normalized, // Today
         // Day 1 missing
@@ -376,7 +390,7 @@ void main() {
     test('grace period allows one miss per streak segment', () {
       final today = DateTime.now();
       final normalized = DateTime(today.year, today.month, today.day);
-      
+
       final completions = <DateTime>{
         normalized, // Today
         normalized.subtract(const Duration(days: 1)), // Day 1
@@ -401,7 +415,7 @@ void main() {
 
       final today = DateTime.now();
       final normalized = DateTime(today.year, today.month, today.day);
-      
+
       final completions = <DateTime>{
         normalized, // Today
         // Day 1 missing
@@ -411,6 +425,20 @@ void main() {
       final streak = calculator.calculateStreak(habitNoGrace, completions);
 
       expect(streak.current, 1); // Breaks immediately
+    });
+
+    test('grace keeps a streak active after one missed scheduled day', () {
+      final today = DateTime.now();
+      final normalized = DateTime(today.year, today.month, today.day);
+
+      final completions = <DateTime>{
+        normalized.subtract(const Duration(days: 2)),
+      };
+
+      final streak = calculator.calculateStreak(habitWithGrace, completions);
+
+      expect(streak.current, 1);
+      expect(streak.hasActiveStreak, true);
     });
   });
 
@@ -437,19 +465,21 @@ void main() {
 
       final streak = calculator.calculateStreak(dailyHabit, completions);
 
-      expect(streak.current, 3);
+      expect(streak.current, 0);
+      expect(streak.longest, 3);
     });
 
     test('handles month boundary correctly', () {
       final completions = <DateTime>{
         DateTime(2024, 1, 31), // End of January
-        DateTime(2024, 2, 1),  // Start of February
+        DateTime(2024, 2, 1), // Start of February
         DateTime(2024, 2, 2),
       };
 
       final streak = calculator.calculateStreak(dailyHabit, completions);
 
-      expect(streak.current, 3);
+      expect(streak.current, 0);
+      expect(streak.longest, 3);
     });
 
     test('handles year boundary correctly', () {
@@ -462,13 +492,14 @@ void main() {
 
       final streak = calculator.calculateStreak(dailyHabit, completions);
 
-      expect(streak.current, 4);
+      expect(streak.current, 0);
+      expect(streak.longest, 4);
     });
 
     test('handles very old completions', () {
       final today = DateTime.now();
       final veryOld = DateTime(2020, 1, 1);
-      
+
       final completions = <DateTime>{
         DateTime(today.year, today.month, today.day),
         veryOld, // 4+ years ago
@@ -483,10 +514,11 @@ void main() {
     test('handles duplicate dates', () {
       final today = DateTime.now();
       final normalized = DateTime(today.year, today.month, today.day);
-      
+
       final completions = <DateTime>{
         normalized,
-        DateTime(today.year, today.month, today.day, 8, 0), // Same day, different time
+        DateTime(today.year, today.month, today.day, 8,
+            0), // Same day, different time
         DateTime(today.year, today.month, today.day, 20, 0),
       };
 
@@ -495,10 +527,10 @@ void main() {
       expect(streak.current, 1); // Duplicates handled
     });
 
-    test('handles future dates', () {
+    test('ignores future dates when calculating streaks', () {
       final today = DateTime.now();
       final future = today.add(const Duration(days: 30));
-      
+
       final completions = <DateTime>{
         DateTime(today.year, today.month, today.day),
         DateTime(future.year, future.month, future.day),
@@ -506,7 +538,22 @@ void main() {
 
       final streak = calculator.calculateStreak(dailyHabit, completions);
 
-      expect(streak.current, greaterThanOrEqualTo(1));
+      expect(streak.current, 1);
+      expect(streak.longest, 1);
+    });
+
+    test('future-only completions do not create streaks', () {
+      final today = DateTime.now();
+      final future = today.add(const Duration(days: 30));
+
+      final completions = <DateTime>{
+        DateTime(future.year, future.month, future.day),
+      };
+
+      final streak = calculator.calculateStreak(dailyHabit, completions);
+
+      expect(streak.current, 0);
+      expect(streak.longest, 0);
     });
 
     test('handles unsorted completion dates', () {
@@ -520,7 +567,8 @@ void main() {
 
       final streak = calculator.calculateStreak(dailyHabit, completions);
 
-      expect(streak.current, 5);
+      expect(streak.current, 0);
+      expect(streak.longest, 5);
     });
   });
 
@@ -545,27 +593,28 @@ void main() {
     test('finds longest streak in history', () {
       final base = DateTime(2024, 1, 1);
       final completions = <DateTime>{};
-      
+
       // First streak: 3 days
       for (int i = 0; i < 3; i++) {
         completions.add(base.add(Duration(days: i)));
       }
-      
+
       // Gap
-      
+
       // Second streak: 7 days (longest)
       for (int i = 10; i < 17; i++) {
         completions.add(base.add(Duration(days: i)));
       }
-      
+
       // Gap
-      
+
       // Third streak: 4 days
       for (int i = 25; i < 29; i++) {
         completions.add(base.add(Duration(days: i)));
       }
 
-      final longest = calculator.calculateLongestStreak(dailyHabit, completions);
+      final longest =
+          calculator.calculateLongestStreak(dailyHabit, completions);
 
       expect(longest, 7);
     });
@@ -573,15 +622,17 @@ void main() {
     test('returns current streak if it is longest', () {
       final today = DateTime.now();
       final completions = <DateTime>{};
-      
+
       // Build 10-day current streak
       for (int i = 0; i < 10; i++) {
         completions.add(
-          DateTime(today.year, today.month, today.day).subtract(Duration(days: i)),
+          DateTime(today.year, today.month, today.day)
+              .subtract(Duration(days: i)),
         );
       }
 
-      final longest = calculator.calculateLongestStreak(dailyHabit, completions);
+      final longest =
+          calculator.calculateLongestStreak(dailyHabit, completions);
 
       expect(longest, 10);
     });
@@ -596,7 +647,7 @@ void main() {
 
       final monday = DateTime(2024, 1, 1);
       final completions = <DateTime>{};
-      
+
       // 2 full weeks (10 weekdays)
       for (int i = 0; i < 14; i++) {
         final date = monday.add(Duration(days: i));
@@ -605,7 +656,8 @@ void main() {
         }
       }
 
-      final longest = calculator.calculateLongestStreak(weekdayHabit, completions);
+      final longest =
+          calculator.calculateLongestStreak(weekdayHabit, completions);
 
       expect(longest, 10);
     });
@@ -638,7 +690,7 @@ void main() {
       final today = DateTime.now();
       final yesterday = DateTime(today.year, today.month, today.day)
           .subtract(const Duration(days: 1));
-      
+
       final completions = {yesterday};
 
       final streak = calculator.calculateStreak(dailyHabit, completions);
@@ -646,20 +698,19 @@ void main() {
       expect(streak.hasActiveStreak, true);
     });
 
-    test('hasActiveStreak true even for old completions', () {
+    test('hasActiveStreak false for old completions', () {
       final today = DateTime.now();
       final twoDaysAgo = DateTime(today.year, today.month, today.day)
           .subtract(const Duration(days: 2));
-      
+
       final completions = {twoDaysAgo};
 
       final streak = calculator.calculateStreak(dailyHabit, completions);
 
-      expect(streak.hasActiveStreak, true); // Has a streak (streak.current > 0)
+      expect(streak.hasActiveStreak, false);
     });
 
-    test('isOnStreak respects weekday frequency on Monday', () {
-      // Test needs to run on actual weekday to validate properly
+    test('isOnStreak respects weekday frequency gaps', () {
       final weekdayHabit = Habit.create(
         id: 'weekday-status',
         name: 'Weekday Status',
@@ -667,12 +718,24 @@ void main() {
         category: HabitCategory.other,
       );
 
-      final friday = DateTime(2024, 1, 5); // Friday
-      final completions = {friday};
+      final today = DateTime.now();
+      final normalizedToday = DateTime(today.year, today.month, today.day);
+      var lastCompletableScheduledDate = normalizedToday;
+
+      if (weekdayHabit.isScheduledFor(normalizedToday)) {
+        lastCompletableScheduledDate =
+            lastCompletableScheduledDate.subtract(const Duration(days: 1));
+      }
+
+      while (!weekdayHabit.isScheduledFor(lastCompletableScheduledDate)) {
+        lastCompletableScheduledDate =
+            lastCompletableScheduledDate.subtract(const Duration(days: 1));
+      }
+
+      final completions = {lastCompletableScheduledDate};
 
       final streak = calculator.calculateStreak(weekdayHabit, completions);
 
-      // Should be active if calculated on Monday (after weekend)
       expect(streak.current, 1);
     });
   });

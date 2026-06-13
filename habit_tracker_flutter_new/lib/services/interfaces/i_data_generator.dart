@@ -48,12 +48,12 @@ abstract class IDataGenerator {
   /// Returns: List of [Habit] objects with valid, unique IDs
   ///
   /// Characteristics of generated habits:
-  /// - ✅ Unique UUIDs for each habit
-  /// - ✅ Valid names (realistic habit descriptions)
-  /// - ✅ Distributed across all categories
-  /// - ✅ Mix of frequencies (not just daily)
-  /// - ✅ Some archived, mostly active
-  /// - ✅ Varied creation dates
+  /// - Unique UUIDs for each habit
+  /// - Valid names (realistic habit descriptions)
+  /// - Distributed across all categories
+  /// - Mix of frequencies (not just daily)
+  /// - Some archived, mostly active
+  /// - Varied creation dates
   ///
   /// Throws:
   /// - [ArgumentError] if count <= 0
@@ -154,10 +154,10 @@ abstract class IDataGenerator {
   /// - `completions`: Map of habitId to Set of DateTime completions
   ///
   /// Generated data characteristics:
-  /// - ✅ Varied completion rates per habit (some consistent, some struggling)
-  /// - ✅ Mix of active streaks and broken streaks
-  /// - ✅ Some habits with gaps, some perfect
-  /// - ✅ Realistic patterns (better at start, taper off)
+  /// - Varied completion rates per habit (some consistent, some struggling)
+  /// - Mix of active streaks and broken streaks
+  /// - Some habits with gaps, some perfect
+  /// - Realistic patterns (better at start, taper off)
   ///
   /// Throws:
   /// - [ArgumentError] if habitCount <= 0 or daysOfHistory < 0

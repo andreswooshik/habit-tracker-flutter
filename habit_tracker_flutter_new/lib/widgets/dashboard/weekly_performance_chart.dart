@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/models/habit_state.dart';
-import 'package:habit_tracker_flutter_new/providers/completions_notifier.dart';
 import 'package:intl/intl.dart';
 
 class WeeklyPerformanceChart extends ConsumerWidget {

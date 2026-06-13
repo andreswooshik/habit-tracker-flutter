@@ -8,10 +8,13 @@ class BasicStreakCalculator implements IStreakCalculator {
 
   @override
   StreakData calculateStreak(Habit habit, Set<DateTime> completions) {
+    final today = _normalizeDate(DateTime.now());
+
     // Normalize all completion dates
     final normalizedCompletions = completions
         .map((date) => _normalizeDate(date))
         .where((date) => habit.isScheduledFor(date))
+        .where((date) => !date.isAfter(today))
         .toSet();
 
     if (normalizedCompletions.isEmpty) {
@@ -27,6 +30,7 @@ class BasicStreakCalculator implements IStreakCalculator {
       habit,
       normalizedCompletions,
       lastCompleted,
+      today,
     );
 
     // Calculate longest streak in entire history
@@ -43,10 +47,13 @@ class BasicStreakCalculator implements IStreakCalculator {
 
   @override
   int calculateLongestStreak(Habit habit, Set<DateTime> completions) {
+    final today = _normalizeDate(DateTime.now());
+
     // Normalize and filter completions
     final normalizedCompletions = completions
         .map((date) => _normalizeDate(date))
         .where((date) => habit.isScheduledFor(date))
+        .where((date) => !date.isAfter(today))
         .toSet();
 
     if (normalizedCompletions.isEmpty) {
@@ -60,7 +67,12 @@ class BasicStreakCalculator implements IStreakCalculator {
     Habit habit,
     Set<DateTime> completions,
     DateTime lastCompleted,
+    DateTime today,
   ) {
+    if (!_isCurrentStreakActive(habit, completions, lastCompleted, today)) {
+      return 0;
+    }
+
     int streak = 0;
     DateTime currentDate = lastCompleted;
     bool missedOneDay = false; // Track if we've used the grace period
@@ -93,6 +105,36 @@ class BasicStreakCalculator implements IStreakCalculator {
     }
 
     return streak;
+  }
+
+  bool _isCurrentStreakActive(
+    Habit habit,
+    Set<DateTime> completions,
+    DateTime lastCompleted,
+    DateTime today,
+  ) {
+    DateTime cursor = today;
+    if (habit.isScheduledFor(today) && !completions.contains(today)) {
+      cursor = cursor.subtract(const Duration(days: 1));
+    }
+
+    var missedScheduledDays = 0;
+
+    while (!cursor.isBefore(lastCompleted)) {
+      if (habit.isScheduledFor(cursor) && !completions.contains(cursor)) {
+        missedScheduledDays++;
+      }
+
+      cursor = cursor.subtract(const Duration(days: 1));
+
+      // Safety check: don't scan back more than 1000 days
+      if (today.difference(cursor).inDays > 1000) {
+        return false;
+      }
+    }
+
+    final allowedMisses = habit.hasGracePeriod ? 1 : 0;
+    return missedScheduledDays <= allowedMisses;
   }
 
   int _calculateLongestStreakFromHistory(
@@ -161,7 +203,6 @@ class BasicStreakCalculator implements IStreakCalculator {
     // Fallback: return next day if no scheduled day found
     return from.add(const Duration(days: 1));
   }
-
 
   DateTime _normalizeDate(DateTime date) {
     return DateTime(date.year, date.month, date.day);

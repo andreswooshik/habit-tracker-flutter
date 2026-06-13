@@ -8,7 +8,7 @@ import 'package:habit_tracker_flutter_new/widgets/analytics/streak_analytics_car
 import 'package:habit_tracker_flutter_new/widgets/analytics/best_days_analysis.dart';
 
 /// Analytics & Insights Screen
-/// 
+///
 /// Displays comprehensive analytics including:
 /// - Time range selector
 /// - Completion rate trends
@@ -16,15 +16,22 @@ import 'package:habit_tracker_flutter_new/widgets/analytics/best_days_analysis.d
 /// - Streak leaderboard
 /// - Best days analysis
 class AnalyticsScreen extends ConsumerWidget {
-  const AnalyticsScreen({super.key});
+  final bool showAppBar;
+
+  const AnalyticsScreen({
+    super.key,
+    this.showAppBar = true,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Analytics & Insights'),
-        centerTitle: true,
-      ),
+      appBar: showAppBar
+          ? AppBar(
+              title: const Text('Analytics & Insights'),
+              centerTitle: true,
+            )
+          : null,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(AppConstants.paddingMedium),
         child: Column(
@@ -32,27 +39,27 @@ class AnalyticsScreen extends ConsumerWidget {
           children: [
             // Time Range Selector
             const TimeRangeSelector(),
-            
+
             SizedBox(height: AppConstants.spacingLarge),
-            
+
             // Completion Rate Chart
             const CompletionRateChart(),
-            
+
             SizedBox(height: AppConstants.spacingLarge),
-            
+
             // Category Performance
             const CategoryPerformanceCard(),
-            
+
             SizedBox(height: AppConstants.spacingLarge),
-            
+
             // Streak Analytics
             const StreakAnalyticsCard(),
-            
+
             SizedBox(height: AppConstants.spacingLarge),
-            
+
             // Best Days Analysis
             const BestDaysAnalysis(),
-            
+
             SizedBox(height: AppConstants.spacingXLarge),
           ],
         ),

@@ -202,11 +202,11 @@ class TodaysSummaryCard extends ConsumerWidget {
   String _getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
-      return 'Good Morning! ☀️';
+      return 'Good Morning!';
     } else if (hour < 18) {
-      return 'Good Afternoon! 🌤️';
+      return 'Good Afternoon!';
     } else {
-      return 'Good Evening! 🌙';
+      return 'Good Evening!';
     }
   }
 
@@ -233,15 +233,15 @@ class TodaysSummaryCard extends ConsumerWidget {
 
   String _getMotivationalMessage(double progress, int completed, int total) {
     if (progress >= 1.0) {
-      return '🎉 Perfect! All $total habits completed today!';
+      return 'Perfect! All $total habits completed today!';
     } else if (progress >= 0.7) {
-      return '💪 Great progress! Only ${total - completed} more to go!';
+      return 'Great progress! Only ${total - completed} more to go!';
     } else if (progress >= 0.4) {
-      return '⚡ Keep going! You\'re making good progress!';
+      return 'Keep going! You\'re making good progress!';
     } else if (completed > 0) {
-      return '🌱 Good start! Let\'s build momentum!';
+      return 'Good start! Let\'s build momentum!';
     } else {
-      return '🚀 Ready to start? Complete your first habit!';
+      return 'Ready to start? Complete your first habit!';
     }
   }
 }
