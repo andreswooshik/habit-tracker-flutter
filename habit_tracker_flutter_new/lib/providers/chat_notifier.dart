@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../config/api_keys.dart';
 import '../models/chat_message.dart';
 import '../models/chat_state.dart';
+import '../services/gemini_chat_service.dart';
 import '../services/habit_coach_chat_service.dart';
 import '../services/interfaces/i_chat_service.dart';
 import '../services/services.dart';
@@ -10,9 +12,14 @@ import 'providers.dart';
 
 /// Provider for the chat service implementation
 ///
-/// Swap [HabitCoachChatService] for an LLM-backed implementation here
-/// without touching the notifier or UI (Dependency Inversion).
+/// Uses the Gemini LLM when an API key is provided (see
+/// lib/config/api_keys.dart), and falls back to the offline rule-based
+/// coach otherwise (Dependency Inversion — the notifier and UI never
+/// know which one they're talking to).
 final chatServiceProvider = Provider<IChatService>((ref) {
+  if (ApiKeys.gemini.isNotEmpty) {
+    return GeminiChatService(apiKey: ApiKeys.gemini);
+  }
   return HabitCoachChatService();
 });
 
