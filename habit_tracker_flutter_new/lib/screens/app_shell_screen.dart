@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker_flutter_new/screens/ai_chat_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/analytics_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/habit_list_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/home_dashboard_screen.dart';
@@ -31,6 +32,11 @@ class _AppShellScreenState extends State<AppShellScreen> {
       selectedIcon: Icons.bar_chart,
     ),
     _AppDestination(
+      label: 'AI Coach',
+      icon: Icons.chat_bubble_outline,
+      selectedIcon: Icons.chat_bubble,
+    ),
+    _AppDestination(
       label: 'Settings',
       icon: Icons.person_outline,
       selectedIcon: Icons.person,
@@ -41,6 +47,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
     HomeDashboardScreen(showAppBar: false),
     HabitListScreen(showAppBar: false),
     AnalyticsScreen(showAppBar: false),
+    AiChatScreen(showAppBar: false),
     SettingsScreen(),
   ];
 

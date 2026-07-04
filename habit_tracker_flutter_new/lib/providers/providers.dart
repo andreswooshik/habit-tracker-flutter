@@ -29,3 +29,6 @@ export 'insights_providers.dart';
 
 // Achievements and consistency tracking
 export 'achievements_providers.dart';
+
+// AI coach conversation state
+export 'chat_notifier.dart';
