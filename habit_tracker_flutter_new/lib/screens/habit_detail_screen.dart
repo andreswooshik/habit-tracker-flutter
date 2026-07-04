@@ -26,63 +26,63 @@ class HabitDetailScreen extends ConsumerWidget {
         habit.isScheduledFor(today) &&
         !completionsState.isCompletedOn(habit.id, today);
 
-    return Hero(
-      tag: 'habit_card_${habit.id}',
-      child: StreakMilestoneCelebration(
-        currentStreak: streakData.current,
-        previousStreak: previousStreak - 1, // Simulate previous for celebration
-        child: Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          body: CustomScrollView(
-            slivers: [
-              // App Bar with gradient header
-              HabitDetailAppBar(
-                habit: habit,
-                onEdit: () => _navigateToEdit(context),
-                onDelete: () => _confirmDelete(context, ref),
+    // Note: the Hero pairing with the habit card lives on the header icon
+    // inside HabitDetailAppBar. Wrapping the whole Scaffold in a Hero is
+    // illegal because SnackBars insert their own Hero into the Scaffold.
+    return StreakMilestoneCelebration(
+      currentStreak: streakData.current,
+      previousStreak: previousStreak - 1, // Simulate previous for celebration
+      child: Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: CustomScrollView(
+          slivers: [
+            // App Bar with gradient header
+            HabitDetailAppBar(
+              habit: habit,
+              onEdit: () => _navigateToEdit(context),
+              onDelete: () => _confirmDelete(context, ref),
+            ),
+
+            // Content sections
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Streak Display Section
+                  StreakDisplayCard(
+                    currentStreak: streakData.current,
+                    bestStreak: streakData.longest,
+                    isAtRisk: isAtRisk,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // 30-Day Calendar Heatmap
+                  HeatmapCalendar(
+                    habit: habit,
+                    selectedDate: selectedDate,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Statistics Grid
+                  StatisticsGrid(
+                    habitId: habit.id,
+                    insights: habitInsights,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Recent Activity Timeline
+                  RecentActivityTimeline(
+                    habitId: habit.id,
+                  ),
+
+                  const SizedBox(height: 32),
+                ],
               ),
-
-              // Content sections
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Streak Display Section
-                    StreakDisplayCard(
-                      currentStreak: streakData.current,
-                      bestStreak: streakData.longest,
-                      isAtRisk: isAtRisk,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // 30-Day Calendar Heatmap
-                    HeatmapCalendar(
-                      habit: habit,
-                      selectedDate: selectedDate,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Statistics Grid
-                    StatisticsGrid(
-                      habitId: habit.id,
-                      insights: habitInsights,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Recent Activity Timeline
-                    RecentActivityTimeline(
-                      habitId: habit.id,
-                    ),
-
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

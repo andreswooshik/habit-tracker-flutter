@@ -78,12 +78,16 @@ class HeatmapCalendar extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: week.map((day) {
-              return _HeatmapDay(
-                date: day,
-                habitId: habit.id,
-              );
-            }).toList(),
+            children: [
+              for (final day in week)
+                _HeatmapDay(
+                  date: day,
+                  habitId: habit.id,
+                ),
+              // Pad short rows with empty slots so cells keep uniform size
+              for (var i = week.length; i < 7; i++)
+                const Expanded(child: SizedBox.shrink()),
+            ],
           ),
         );
       }).toList(),

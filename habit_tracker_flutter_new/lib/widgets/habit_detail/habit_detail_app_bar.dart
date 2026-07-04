@@ -24,8 +24,12 @@ class HabitDetailAppBar extends StatelessWidget {
       pinned: true,
       backgroundColor: categoryColor,
       flexibleSpace: FlexibleSpaceBar(
+        titlePadding:
+            const EdgeInsetsDirectional.only(start: 56, bottom: 16, end: 96),
         title: Text(
           habit.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -43,24 +47,33 @@ class HabitDetailAppBar extends StatelessWidget {
             ),
           ),
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 32),
-                Icon(
-                  styleService.getIcon(habit.category),
-                  size: 64,
-                  color: Colors.white.withValues(alpha: 0.9),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  _getFrequencyText(),
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 14,
+            child: Padding(
+              // Keep the icon and frequency label above the title strip
+              // that FlexibleSpaceBar draws along the bottom edge
+              padding: const EdgeInsets.only(top: 16, bottom: 64),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Paired with the habit card's Hero so the card flies
+                  // into this icon on navigation
+                  Hero(
+                    tag: 'habit_card_${habit.id}',
+                    child: Icon(
+                      styleService.getIcon(habit.category),
+                      size: 64,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Text(
+                    _getFrequencyText(),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
