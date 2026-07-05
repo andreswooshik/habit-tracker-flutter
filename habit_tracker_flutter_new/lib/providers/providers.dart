@@ -32,3 +32,6 @@ export 'achievements_providers.dart';
 
 // AI coach conversation state
 export 'chat_notifier.dart';
+
+// Authentication state (Supabase)
+export 'auth_providers.dart';

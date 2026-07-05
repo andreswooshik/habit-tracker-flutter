@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker_flutter_new/providers/providers.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -28,12 +32,13 @@ class SettingsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Your Habit Space',
+                        user?.shownName ?? 'Your Habit Space',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Personal settings and profile tools will live here.',
+                        user?.email ??
+                            'Personal settings and profile tools will live here.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
@@ -63,7 +68,51 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
         ),
+        // Only shown when signed in (Supabase configured)
+        if (user != null) ...[
+          const SizedBox(height: 16),
+          Card(
+            child: ListTile(
+              leading: Icon(
+                Icons.logout,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              title: Text(
+                'Sign Out',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+              onTap: () => _confirmSignOut(context, ref),
+            ),
+          ),
+        ],
       ],
     );
+  }
+
+  Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      // AuthGate reacts to the auth state stream and shows the login screen
+      await ref.read(authServiceProvider).signOut();
+    }
   }
 }
