@@ -12,3 +12,4 @@ export 'i_streak_calculator.dart';
 export 'i_data_generator.dart';
 export 'i_chat_service.dart';
 export 'i_auth_service.dart';
+export 'i_weekly_summary_service.dart';
