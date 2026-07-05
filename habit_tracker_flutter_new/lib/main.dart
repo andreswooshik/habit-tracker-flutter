@@ -9,6 +9,10 @@ import 'package:habit_tracker_flutter_new/screens/app_shell_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/auth/auth_gate.dart';
 import 'package:habit_tracker_flutter_new/repositories/hive/hive_habits_repository.dart';
 import 'package:habit_tracker_flutter_new/repositories/hive/hive_completions_repository.dart';
+import 'package:habit_tracker_flutter_new/repositories/interfaces/i_completions_repository.dart';
+import 'package:habit_tracker_flutter_new/repositories/interfaces/i_habits_repository.dart';
+import 'package:habit_tracker_flutter_new/repositories/supabase/supabase_completions_repository.dart';
+import 'package:habit_tracker_flutter_new/repositories/supabase/supabase_habits_repository.dart';
 import 'package:habit_tracker_flutter_new/services/mock_data_loader.dart';
 
 const bool useMockData = false; // Change this to toggle demo/production mode
@@ -18,27 +22,31 @@ void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Supabase (auth) when configured; otherwise the app
-  // runs in local-only mode without a login screen
+  // With Supabase configured the app runs in cloud mode: login is
+  // required and habits/completions live in Supabase tables (per-user,
+  // enforced by RLS). Otherwise it runs local-only on Hive, no login.
+  final IHabitsRepository habitsRepository;
+  final ICompletionsRepository completionsRepository;
+
   if (ApiKeys.supabaseConfigured) {
     await Supabase.initialize(
       url: ApiKeys.supabaseUrl,
       publishableKey: ApiKeys.supabaseAnonKey,
     );
+    habitsRepository = SupabaseHabitsRepository();
+    completionsRepository = SupabaseCompletionsRepository();
+  } else {
+    await Hive.initFlutter();
+    habitsRepository = HiveHabitsRepository();
+    completionsRepository = HiveCompletionsRepository();
   }
-
-  // Initialize Hive
-  await Hive.initFlutter();
-
-  // Initialize repositories
-  final habitsRepository = HiveHabitsRepository();
-  final completionsRepository = HiveCompletionsRepository();
 
   await habitsRepository.init();
   await completionsRepository.init();
 
-  // Load mock data if feature flag is enabled
-  if (useMockData) {
+  // Load mock data if feature flag is enabled (local-only mode — never
+  // seed demo rows into a real user's cloud data)
+  if (useMockData && !ApiKeys.supabaseConfigured) {
     final mockDataLoader = MockDataLoader(
       habitsRepository: habitsRepository,
       completionsRepository: completionsRepository,
