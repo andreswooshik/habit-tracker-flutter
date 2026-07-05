@@ -54,6 +54,7 @@ dependencies:
   hive_flutter: ^1.1.0      # Flutter extensions for Hive
   path_provider: ^2.1.1     # Get application directory paths
   http: ^1.6.0
+  supabase_flutter: ^2.15.4
 
 dev_dependencies:
   flutter_test:
