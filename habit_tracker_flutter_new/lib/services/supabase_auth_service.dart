@@ -50,8 +50,8 @@ class SupabaseAuthService implements IAuthService {
       return AuthResult.success(user);
     } on AuthException catch (e) {
       return AuthResult.failure(e.message);
-    } catch (e) {
-      return AuthResult.failure('Sign up failed: ${e.toString()}');
+    } catch (_) {
+      return const AuthResult.failure('Sign up failed. Please try again.');
     }
   }
 
@@ -72,8 +72,8 @@ class SupabaseAuthService implements IAuthService {
       return AuthResult.success(user);
     } on AuthException catch (e) {
       return AuthResult.failure(e.message);
-    } catch (e) {
-      return AuthResult.failure('Sign in failed: ${e.toString()}');
+    } catch (_) {
+      return const AuthResult.failure('Sign in failed. Please try again.');
     }
   }
 
@@ -85,7 +85,7 @@ class SupabaseAuthService implements IAuthService {
     return AppUser(
       id: user.id,
       email: user.email ?? '',
-      displayName: user.userMetadata?['display_name'] as String?,
+      displayName: user.userMetadata?['display_name']?.toString(),
     );
   }
 }
