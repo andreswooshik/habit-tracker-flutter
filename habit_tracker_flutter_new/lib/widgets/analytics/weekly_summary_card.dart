@@ -32,7 +32,7 @@ class WeeklySummaryCard extends ConsumerWidget {
                         ),
                   ),
                 ),
-                if (state.hasSummary && !state.isGenerating)
+                if (state.hasSummary && !state.isGenerating && state.errorMessage == null)
                   IconButton(
                     tooltip: 'Regenerate',
                     icon: const Icon(Icons.refresh),
