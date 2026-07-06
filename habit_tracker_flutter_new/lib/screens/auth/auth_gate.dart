@@ -15,6 +15,17 @@ class AuthGate extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateChangesProvider);
 
+    // When a different account (or none) becomes active, drop all
+    // per-user state so the next reads load that user's data fresh
+    ref.listen(authStateChangesProvider, (previous, next) {
+      if (previous?.valueOrNull?.id != next.valueOrNull?.id) {
+        ref.invalidate(habitsProvider);
+        ref.invalidate(completionsProvider);
+        ref.invalidate(chatProvider);
+        ref.invalidate(weeklySummaryProvider);
+      }
+    });
+
     return authState.when(
       data: (user) =>
           user != null ? const AppShellScreen() : const LoginScreen(),
