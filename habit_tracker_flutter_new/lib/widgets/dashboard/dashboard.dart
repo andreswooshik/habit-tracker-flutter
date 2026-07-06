@@ -5,5 +5,6 @@ export 'weekly_performance_chart.dart';
 export 'achievements_showcase.dart';
 export 'consistency_tracker.dart';
 export 'quick_stats_grid.dart';
+export 'smart_recommendations_card.dart';
 export 'category_breakdown.dart';
 export 'todays_habits_list.dart';

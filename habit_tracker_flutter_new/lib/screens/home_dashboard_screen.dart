@@ -74,6 +74,11 @@ class HomeDashboardScreen extends ConsumerWidget {
 
                   const SizedBox(height: 20),
 
+                  // Smart Habit Recommendations
+                  const SmartRecommendationsCard(),
+
+                  const SizedBox(height: 20),
+
                   // Today's Habits List
                   const TodaysHabitsList(),
 

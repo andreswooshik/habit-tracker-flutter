@@ -38,3 +38,6 @@ export 'auth_providers.dart';
 
 // AI weekly summary state
 export 'weekly_summary_providers.dart';
+
+// Smart habit recommendations state
+export 'recommendation_providers.dart';
