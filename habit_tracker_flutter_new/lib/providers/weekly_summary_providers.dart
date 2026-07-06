@@ -31,9 +31,10 @@ final weeklySummaryContextProvider = Provider<WeeklySummaryContext>((ref) {
 
   final now = DateTime.now();
   final weekEnd = DateTime(now.year, now.month, now.day);
-  final weekStart = weekEnd.subtract(const Duration(days: 6));
+  final weekStart = DateTime(weekEnd.year, weekEnd.month, weekEnd.day - 6);
   final days = [
-    for (var i = 0; i < 7; i++) weekStart.add(Duration(days: i)),
+    for (var i = 0; i < 7; i++)
+      DateTime(weekStart.year, weekStart.month, weekStart.day + i),
   ];
 
   final activeHabits =
