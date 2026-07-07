@@ -10,7 +10,9 @@ final habitInsightsProvider = Provider<HabitInsights>((ref) {
   final habitState = ref.watch(habitsProvider);
   final completionsState = ref.watch(completionsProvider);
   final streakCalculator = ref.watch(streakCalculatorProvider);
-  final selectedDate = ref.watch(selectedDateProvider);
+  // Dashboard insights always reflect the real today, regardless of
+  // the date being browsed in the habit list screen
+  final today = ref.watch(todayProvider);
 
   // Extract habits list from state
   final allHabits = habitState.habits;
@@ -73,20 +75,20 @@ final habitInsightsProvider = Provider<HabitInsights>((ref) {
   double overallCompletionRate = _calculateOverallCompletionRate(
     activeHabits,
     completionsMap,
-    selectedDate,
+    today,
   );
 
   // Calculate weekly and monthly consistency
   final weeklyConsistency = _calculateConsistency(
     activeHabits,
     completionsMap,
-    selectedDate,
+    today,
     7,
   );
   final monthlyConsistency = _calculateConsistency(
     activeHabits,
     completionsMap,
-    selectedDate,
+    today,
     30,
   );
 
@@ -94,21 +96,21 @@ final habitInsightsProvider = Provider<HabitInsights>((ref) {
   final habitsAtRisk = _findHabitsAtRisk(
     activeHabits,
     completionsMap,
-    selectedDate,
+    today,
   );
 
   // Calculate perfect days stats
   final perfectDaysStats = _calculatePerfectDaysStats(
     activeHabits,
     completionsMap,
-    selectedDate,
+    today,
   );
 
   // Calculate category performance
   final categoryStats = _calculateCategoryPerformance(
     activeHabits,
     completionsMap,
-    selectedDate,
+    today,
   );
 
   // Count achievements (placeholder for now - will be computed by achievementsProvider)

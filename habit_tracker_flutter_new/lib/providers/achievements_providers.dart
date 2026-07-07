@@ -117,14 +117,14 @@ final recentAchievementsProvider = Provider<List<Achievement>>((ref) {
 final weeklyConsistencyProvider = Provider<Map<String, double>>((ref) {
   final habitState = ref.watch(habitsProvider);
   final completionsState = ref.watch(completionsProvider);
-  final selectedDate = ref.watch(selectedDateProvider);
+  // Consistency always measures the real last 7 days, regardless of
+  // the date being browsed in the habit list screen
+  final today = ref.watch(todayProvider);
 
   final activeHabits = habitState.habits.where((h) => !h.isArchived).toList();
   final completionsMap = completionsState.completions;
 
   final consistency = <String, double>{};
-
-  final today = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
   final weekAgo = today.subtract(const Duration(days: 6)); // 7 days total including today
 
   for (final habit in activeHabits) {

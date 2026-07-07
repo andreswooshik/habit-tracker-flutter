@@ -43,7 +43,7 @@ void main() {
 
       // Set selected date to a weekday (Monday)
       final monday = DateTime(2024, 1, 1); // January 1, 2024 is a Monday
-      container.read(selectedDateProvider.notifier).state = monday;
+      container.read(todayProvider.notifier).state = monday;
 
       final todaysHabits = container.read(todaysHabitsProvider);
 
@@ -66,7 +66,7 @@ void main() {
 
       // Set selected date to Saturday
       final saturday = DateTime(2024, 1, 6); // January 6, 2024 is a Saturday
-      container.read(selectedDateProvider.notifier).state = saturday;
+      container.read(todayProvider.notifier).state = saturday;
 
       final todaysHabits = container.read(todaysHabitsProvider);
 
@@ -127,7 +127,7 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(habit3);
 
       final today = DateTime.now();
-      container.read(selectedDateProvider.notifier).state = today;
+      container.read(todayProvider.notifier).state = today;
 
       // Mark habit2 as complete
       container.read(completionsProvider.notifier).markComplete('2', today);
@@ -189,19 +189,19 @@ void main() {
 
       // Test on Monday (should appear)
       final monday = DateTime(2024, 1, 1);
-      container.read(selectedDateProvider.notifier).state = monday;
+      container.read(todayProvider.notifier).state = monday;
       var todaysHabits = container.read(todaysHabitsProvider);
       expect(todaysHabits, hasLength(1));
 
       // Test on Tuesday (should not appear)
       final tuesday = DateTime(2024, 1, 2);
-      container.read(selectedDateProvider.notifier).state = tuesday;
+      container.read(todayProvider.notifier).state = tuesday;
       todaysHabits = container.read(todaysHabitsProvider);
       expect(todaysHabits, isEmpty);
 
       // Test on Wednesday (should appear)
       final wednesday = DateTime(2024, 1, 3);
-      container.read(selectedDateProvider.notifier).state = wednesday;
+      container.read(todayProvider.notifier).state = wednesday;
       todaysHabits = container.read(todaysHabitsProvider);
       expect(todaysHabits, hasLength(1));
     });
@@ -219,13 +219,13 @@ void main() {
 
       // Start on Monday
       final monday = DateTime(2024, 1, 1);
-      container.read(selectedDateProvider.notifier).state = monday;
+      container.read(todayProvider.notifier).state = monday;
       var todaysHabits = container.read(todaysHabitsProvider);
       expect(todaysHabits, hasLength(1));
 
       // Change to Saturday
       final saturday = DateTime(2024, 1, 6);
-      container.read(selectedDateProvider.notifier).state = saturday;
+      container.read(todayProvider.notifier).state = saturday;
       todaysHabits = container.read(todaysHabitsProvider);
       expect(todaysHabits, isEmpty);
     });
@@ -343,7 +343,7 @@ void main() {
 
     test('completedTodayCountProvider returns correct count', () {
       final today = DateTime.now();
-      container.read(selectedDateProvider.notifier).state = today;
+      container.read(todayProvider.notifier).state = today;
 
       // Add 3 daily habits
       for (int i = 1; i <= 3; i++) {
@@ -367,7 +367,7 @@ void main() {
 
     test('todaysProgressProvider calculates percentage correctly', () {
       final today = DateTime.now();
-      container.read(selectedDateProvider.notifier).state = today;
+      container.read(todayProvider.notifier).state = today;
 
       // Add 4 daily habits
       for (int i = 1; i <= 4; i++) {
@@ -397,7 +397,7 @@ void main() {
 
     test('todaysProgressProvider returns 1.0 when all completed', () {
       final today = DateTime.now();
-      container.read(selectedDateProvider.notifier).state = today;
+      container.read(todayProvider.notifier).state = today;
 
       // Add 2 daily habits
       for (int i = 1; i <= 2; i++) {
@@ -417,6 +417,60 @@ void main() {
 
       final progress = container.read(todaysProgressProvider);
       expect(progress, equals(1.0)); // 100%
+    });
+  });
+
+  group('Dashboard / habit list date independence (regression)', () {
+    // Bug: browsing another date in the habit list screen used to
+    // change the dashboard's "today" cards, because both derived from
+    // selectedDateProvider. Today-anchored and selected-date-anchored
+    // providers must stay independent.
+
+    void addWeekdaysHabit() {
+      container.read(habitsProvider.notifier).addHabit(
+            Habit.create(
+              id: '1',
+              name: 'Weekdays',
+              category: HabitCategory.productivity,
+              frequency: HabitFrequency.weekdays,
+            ),
+          );
+    }
+
+    test('browsing another date does not change the today providers', () {
+      addWeekdaysHabit();
+
+      final monday = DateTime(2024, 1, 1); // Monday
+      final saturday = DateTime(2024, 1, 6); // Saturday, not scheduled
+      container.read(todayProvider.notifier).state = monday;
+      container.read(completionsProvider.notifier).markComplete('1', monday);
+
+      // Browse to Saturday in the habit list screen
+      container.read(selectedDateProvider.notifier).state = saturday;
+
+      // Dashboard still shows Monday's data
+      expect(container.read(todaysHabitsProvider), hasLength(1));
+      expect(container.read(completedTodayCountProvider), equals(1));
+      expect(container.read(todaysProgressProvider), equals(1.0));
+    });
+
+    test('selected-date providers follow the browsed date', () {
+      addWeekdaysHabit();
+
+      final monday = DateTime(2024, 1, 1);
+      final saturday = DateTime(2024, 1, 6);
+      container.read(todayProvider.notifier).state = monday;
+
+      container.read(selectedDateProvider.notifier).state = monday;
+      expect(container.read(selectedDateHabitsProvider), hasLength(1));
+
+      container.read(selectedDateProvider.notifier).state = saturday;
+      expect(container.read(selectedDateHabitsProvider), isEmpty);
+      expect(container.read(selectedDateCompletedCountProvider), equals(0));
+      expect(container.read(selectedDateProgressProvider), equals(0.0));
+
+      // The dashboard never moved off Monday
+      expect(container.read(todaysHabitsProvider), hasLength(1));
     });
   });
 }
