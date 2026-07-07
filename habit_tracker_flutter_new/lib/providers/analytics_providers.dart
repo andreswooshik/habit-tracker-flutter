@@ -66,6 +66,20 @@ final effectiveDateRangeProvider = Provider<DateRange>((ref) {
   return DateRange(start: start, end: end);
 });
 
+/// True when [date] falls before the day [habit] was created
+///
+/// Analytics must not count a day as "scheduled" if the habit didn't
+/// exist yet — otherwise new habits show misleading 0% rates over
+/// days they could never have been completed on.
+bool _isBeforeCreation(DateTime date, Habit habit) {
+  final createdDay = DateTime(
+    habit.createdAt.year,
+    habit.createdAt.month,
+    habit.createdAt.day,
+  );
+  return date.isBefore(createdDay);
+}
+
 /// Category performance data
 class CategoryPerformance {
   final String categoryName;
@@ -97,6 +111,7 @@ final categoryPerformanceProvider = Provider<List<CategoryPerformance>>((ref) {
     int totalCompleted = 0;
 
     for (final date in dateRange.days) {
+      if (_isBeforeCreation(date, habit)) continue;
       if (habit.isScheduledFor(date)) {
         totalScheduled++;
         final habitCompletions = completions[habit.id] ?? {};
@@ -170,6 +185,7 @@ final weekdayPerformanceProvider = Provider<List<DayPerformance>>((ref) {
     for (final date in dateRange.days) {
       if (date.weekday == weekday) {
         for (final habit in habits) {
+          if (_isBeforeCreation(date, habit)) continue;
           if (habit.isScheduledFor(date)) {
             totalScheduled++;
             final habitCompletions = completions[habit.id] ?? {};
@@ -204,6 +220,7 @@ final completionTrendProvider = Provider<List<CompletionTrendPoint>>((ref) {
     int totalCompleted = 0;
 
     for (final habit in habits) {
+      if (_isBeforeCreation(date, habit)) continue;
       if (habit.isScheduledFor(date)) {
         totalScheduled++;
         final habitCompletions = completions[habit.id] ?? {};
