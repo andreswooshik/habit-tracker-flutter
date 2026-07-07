@@ -38,7 +38,7 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state = daysAgo(0);
+      container.read(todayProvider.notifier).state = daysAgo(0);
       container
           .read(completionsProvider.notifier)
           .markComplete('1', daysAgo(0));
@@ -60,7 +60,7 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state =
+      container.read(todayProvider.notifier).state =
           DateTime(2024, 1, 7);
 
       // Complete 7 consecutive days
@@ -93,7 +93,7 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state = daysAgo(0);
+      container.read(todayProvider.notifier).state = daysAgo(0);
 
       // Complete 30 consecutive days
       for (int i = 0; i < 30; i++) {
@@ -128,7 +128,7 @@ void main() {
 
       container.read(habitsProvider.notifier).addHabit(habit1);
       container.read(habitsProvider.notifier).addHabit(habit2);
-      container.read(selectedDateProvider.notifier).state = daysAgo(0);
+      container.read(todayProvider.notifier).state = daysAgo(0);
 
       // Both habits: 3-day streak
       for (int i = 0; i < 3; i++) {
@@ -157,7 +157,7 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state = daysAgo(0);
+      container.read(todayProvider.notifier).state = daysAgo(0);
 
       // Create 3-day streak
       for (int i = 0; i < 3; i++) {
@@ -191,7 +191,7 @@ void main() {
 
       container.read(habitsProvider.notifier).addHabit(habit1);
       container.read(habitsProvider.notifier).addHabit(habit2);
-      container.read(selectedDateProvider.notifier).state = daysAgo(0);
+      container.read(todayProvider.notifier).state = daysAgo(0);
 
       // Both habits: 3-day streak
       for (int i = 0; i < 3; i++) {
@@ -224,7 +224,7 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state = daysAgo(0);
+      container.read(todayProvider.notifier).state = daysAgo(0);
 
       // Create 3-day streak (firstCompletion + streak3 = 2 achievements)
       for (int i = 0; i < 3; i++) {
@@ -248,7 +248,7 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state =
+      container.read(todayProvider.notifier).state =
           DateTime(2024, 1, 7);
 
       // Complete all 7 days
@@ -271,7 +271,7 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state =
+      container.read(todayProvider.notifier).state =
           DateTime(2024, 1, 8);
 
       // Complete 4 out of 7 days (Jan 2-8)
@@ -296,7 +296,7 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(weekdaysHabit);
 
       // Jan 1-7, 2024: Mon-Sun (5 weekdays)
-      container.read(selectedDateProvider.notifier).state =
+      container.read(todayProvider.notifier).state =
           DateTime(2024, 1, 7);
 
       // Complete Mon, Tue, Thu (3 out of 5 weekdays)
@@ -323,7 +323,7 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state =
+      container.read(todayProvider.notifier).state =
           DateTime(2024, 1, 7);
 
       // No completions
@@ -347,7 +347,7 @@ void main() {
 
       container.read(habitsProvider.notifier).addHabit(habit1);
       container.read(habitsProvider.notifier).addHabit(habit2);
-      container.read(selectedDateProvider.notifier).state =
+      container.read(todayProvider.notifier).state =
           DateTime(2024, 1, 7);
 
       // Habit 1: perfect 7/7
@@ -381,7 +381,7 @@ void main() {
       );
 
       container.read(habitsProvider.notifier).addHabit(habit);
-      container.read(selectedDateProvider.notifier).state =
+      container.read(todayProvider.notifier).state =
           DateTime(2024, 1, 7);
 
       // Complete 5 out of 7 days
@@ -427,7 +427,7 @@ void main() {
       container.read(habitsProvider.notifier).addHabit(highConsistency);
       container.read(habitsProvider.notifier).addHabit(mediumConsistency);
       container.read(habitsProvider.notifier).addHabit(lowConsistency);
-      container.read(selectedDateProvider.notifier).state =
+      container.read(todayProvider.notifier).state =
           DateTime(2024, 1, 7);
 
       // High: 6/7 (85.7%)
@@ -480,7 +480,7 @@ void main() {
 
       container.read(habitsProvider.notifier).addHabit(habit1);
       container.read(habitsProvider.notifier).addHabit(habit2);
-      container.read(selectedDateProvider.notifier).state =
+      container.read(todayProvider.notifier).state =
           DateTime(2024, 1, 7);
 
       // Habit 1: 7/7 (100%)

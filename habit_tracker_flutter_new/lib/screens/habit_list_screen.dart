@@ -23,11 +23,13 @@ class HabitListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todaysHabits = ref.watch(todaysHabitsProvider);
+    // Anchored to the browsed date, not today — this screen navigates
+    // between days without affecting the dashboard
+    final todaysHabits = ref.watch(selectedDateHabitsProvider);
     final selectedDate = ref.watch(selectedDateProvider);
-    final todaysProgress = ref.watch(todaysProgressProvider);
-    final completedCount = ref.watch(completedTodayCountProvider);
-    final totalCount = ref.watch(todaysHabitsCountProvider);
+    final todaysProgress = ref.watch(selectedDateProgressProvider);
+    final completedCount = ref.watch(selectedDateCompletedCountProvider);
+    final totalCount = ref.watch(selectedDateHabitsCountProvider);
     final hasAnyActiveHabits =
         ref.watch(habitsProvider).activeHabits.isNotEmpty;
 

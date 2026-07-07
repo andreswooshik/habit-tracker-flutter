@@ -13,7 +13,9 @@ class TodaysHabitsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final todaysHabits = ref.watch(todaysHabitsProvider);
-    final selectedDate = ref.watch(selectedDateProvider);
+    // Always the real today — the dashboard must not follow the date
+    // being browsed in the habit list screen
+    final selectedDate = ref.watch(todayProvider);
     final completedCount = ref.watch(completedTodayCountProvider);
     final totalCount = ref.watch(todaysHabitsCountProvider);
     final hasAnyActiveHabits =

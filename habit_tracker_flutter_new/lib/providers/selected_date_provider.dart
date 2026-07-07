@@ -12,6 +12,18 @@ final selectedDateProvider = StateProvider<DateTime>((ref) {
   return _normalizeDate(DateTime.now());
 });
 
+/// The real current date, normalized to midnight
+///
+/// Single "clock" anchor for everything that must always reflect
+/// today — dashboard cards, AI coach context, achievements — no matter
+/// which date is being browsed via [selectedDateProvider].
+///
+/// A StateProvider only so tests can pin a deterministic date;
+/// production code must never write to it.
+final todayProvider = StateProvider<DateTime>((ref) {
+  return _normalizeDate(DateTime.now());
+});
+
 /// Normalizes a date by removing the time component
 DateTime _normalizeDate(DateTime date) {
   return DateTime(date.year, date.month, date.day);
