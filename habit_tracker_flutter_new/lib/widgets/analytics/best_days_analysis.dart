@@ -13,7 +13,13 @@ class BestDaysAnalysis extends ConsumerWidget {
     final weekdayData = ref.watch(weekdayPerformanceProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
-    if (weekdayData.isEmpty) {
+    // Only weekdays that had scheduled habits carry signal — a day
+    // with nothing scheduled is "no data", not 0% performance, and
+    // must not drag down the average or count as the worst day
+    final daysWithData =
+        weekdayData.where((d) => d.totalScheduled > 0).toList();
+
+    if (daysWithData.isEmpty) {
       return Card(
         child: Padding(
           padding: EdgeInsets.all(AppConstants.paddingLarge),
@@ -29,14 +35,14 @@ class BestDaysAnalysis extends ConsumerWidget {
       );
     }
 
-    final sortedByRate = List<DayPerformance>.from(weekdayData)
+    final sortedByRate = List<DayPerformance>.from(daysWithData)
       ..sort((a, b) => b.completionRate.compareTo(a.completionRate));
-    
+
     final bestDay = sortedByRate.first;
     final worstDay = sortedByRate.last;
-    final avgRate = weekdayData.isEmpty
-        ? 0.0
-        : weekdayData.map((d) => d.completionRate).reduce((a, b) => a + b) / weekdayData.length;
+    final avgRate =
+        daysWithData.map((d) => d.completionRate).reduce((a, b) => a + b) /
+            daysWithData.length;
 
     return Card(
       child: Padding(
@@ -67,7 +73,8 @@ class BestDaysAnalysis extends ConsumerWidget {
             
             // Bar chart
             ...weekdayData.map((day) {
-              final isMaxHeight = day.completionRate == sortedByRate.first.completionRate;
+              final isMaxHeight = day.totalScheduled > 0 &&
+                  day.completionRate == bestDay.completionRate;
               final barColor = isMaxHeight ? Colors.green : colorScheme.primary;
               
               return Padding(
@@ -157,24 +164,31 @@ class _DayBar extends StatelessWidget {
             ),
             SizedBox(
               width: 80,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    '${(completionRate * 100).toStringAsFixed(0)}%',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: color,
-                        ),
-                  ),
-                  SizedBox(width: AppConstants.spacingSmall),
-                  Text(
-                    '($totalCompleted/$totalScheduled)',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
+              // Scale down instead of overflowing when the label is
+              // wide, e.g. "100% (12/12)"
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${(completionRate * 100).toStringAsFixed(0)}%',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: color,
+                          ),
+                    ),
+                    SizedBox(width: AppConstants.spacingSmall),
+                    Text(
+                      '($totalCompleted/$totalScheduled)',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
