@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/screens/ai_chat_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/analytics_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/habit_list_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/home_dashboard_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/settings_screen.dart';
 
-class AppShellScreen extends StatefulWidget {
+class AppShellScreen extends ConsumerStatefulWidget {
   const AppShellScreen({super.key});
 
   @override
-  State<AppShellScreen> createState() => _AppShellScreenState();
+  ConsumerState<AppShellScreen> createState() => _AppShellScreenState();
 }
 
-class _AppShellScreenState extends State<AppShellScreen> {
+class _AppShellScreenState extends ConsumerState<AppShellScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Schedule smart reminders once the first frame (and providers) are up
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(reminderSchedulerProvider).reschedule();
+    });
+  }
 
   static const _destinations = [
     _AppDestination(
@@ -53,6 +64,15 @@ class _AppShellScreenState extends State<AppShellScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Keep scheduled reminders in step with the data: completing a habit
+    // drops its reminder, adding one schedules it
+    ref.listen(completionsProvider, (previous, next) {
+      ref.read(reminderSchedulerProvider).reschedule();
+    });
+    ref.listen(habitsProvider, (previous, next) {
+      ref.read(reminderSchedulerProvider).reschedule();
+    });
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final useRail = constraints.maxWidth >= 800;

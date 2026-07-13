@@ -82,6 +82,7 @@ class HabitListScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToAddHabit(context),
+        tooltip: 'Create a new habit',
         icon: const Icon(Icons.add),
         label: const Text('New Habit'),
       ),

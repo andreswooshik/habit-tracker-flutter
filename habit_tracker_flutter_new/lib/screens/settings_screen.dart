@@ -8,6 +8,8 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final reminders = ref.watch(reminderSettingsProvider);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -55,9 +57,38 @@ class SettingsScreen extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.palette_outlined),
                 title: const Text('Theme'),
-                subtitle: const Text('Light mode'),
-                onTap: () {},
+                subtitle: Text(_themeModeLabel(themeMode)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _pickThemeMode(context, ref, themeMode),
               ),
+              const Divider(height: 1),
+              SwitchListTile(
+                secondary: const Icon(Icons.notifications_outlined),
+                title: const Text('Daily reminders'),
+                subtitle: const Text(
+                  'Smart notifications for habits you haven\'t completed',
+                ),
+                value: reminders.enabled,
+                onChanged: (enabled) =>
+                    _setRemindersEnabled(context, ref, enabled),
+              ),
+              if (reminders.enabled) ...[
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.schedule_outlined),
+                  title: const Text('Reminder time'),
+                  subtitle: Text(
+                    MaterialLocalizations.of(context).formatTimeOfDay(
+                      TimeOfDay(
+                        hour: reminders.hour,
+                        minute: reminders.minute,
+                      ),
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _pickReminderTime(context, ref, reminders),
+                ),
+              ],
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.download_outlined),
@@ -89,6 +120,94 @@ class SettingsScreen extends ConsumerWidget {
         ],
       ],
     );
+  }
+
+  String _themeModeLabel(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.system:
+        return 'System default';
+      case ThemeMode.light:
+        return 'Light mode';
+      case ThemeMode.dark:
+        return 'Dark mode';
+    }
+  }
+
+  Future<void> _pickThemeMode(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeMode current,
+  ) async {
+    final selected = await showDialog<ThemeMode>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Theme'),
+        children: [
+          RadioGroup<ThemeMode>(
+            groupValue: current,
+            onChanged: (value) => Navigator.of(context).pop(value),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final mode in ThemeMode.values)
+                  RadioListTile<ThemeMode>(
+                    title: Text(_themeModeLabel(mode)),
+                    value: mode,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (selected != null) {
+      await ref.read(themeModeProvider.notifier).setMode(selected);
+    }
+  }
+
+  Future<void> _setRemindersEnabled(
+    BuildContext context,
+    WidgetRef ref,
+    bool enabled,
+  ) async {
+    if (enabled) {
+      final granted =
+          await ref.read(notificationServiceProvider).requestPermissions();
+      if (!granted) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Notifications are blocked — allow them in system settings',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+    }
+    await ref.read(reminderSettingsProvider.notifier).setEnabled(enabled);
+    await ref.read(reminderSchedulerProvider).reschedule();
+  }
+
+  Future<void> _pickReminderTime(
+    BuildContext context,
+    WidgetRef ref,
+    ReminderSettings reminders,
+  ) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: reminders.hour, minute: reminders.minute),
+      helpText: 'Daily reminder time',
+    );
+
+    if (picked != null) {
+      await ref
+          .read(reminderSettingsProvider.notifier)
+          .setTime(picked.hour, picked.minute);
+      await ref.read(reminderSchedulerProvider).reschedule();
+    }
   }
 
   Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {

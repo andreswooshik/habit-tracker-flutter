@@ -142,44 +142,54 @@ class HabitCard extends ConsumerWidget {
     // Can only mark complete today, and CANNOT unmark once completed for today
     final canToggle = isToday && !isCompleted;
 
-    return GestureDetector(
-      onTap: canToggle
-          ? () => _toggleCompletion(ref, isCompleted)
-          : () => _showCompletionLockedMessage(context, isCompleted, isToday),
-      child: Opacity(
-        opacity: canToggle ? 1.0 : 0.5,
-        child: BounceAnimation(
-          shouldAnimate: isCompleted,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isCompleted
-                    ? Colors.green
-                    : (canToggle ? Colors.grey.shade400 : Colors.grey.shade300),
-                width: 2.5,
+    return Semantics(
+      button: true,
+      enabled: canToggle,
+      checked: isCompleted,
+      label: isCompleted
+          ? '${habit.name} completed'
+          : 'Mark ${habit.name} as complete',
+      child: GestureDetector(
+        onTap: canToggle
+            ? () => _toggleCompletion(ref, isCompleted)
+            : () => _showCompletionLockedMessage(context, isCompleted, isToday),
+        child: Opacity(
+          opacity: canToggle ? 1.0 : 0.5,
+          child: BounceAnimation(
+            shouldAnimate: isCompleted,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isCompleted
+                      ? Colors.green
+                      : (canToggle
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade300),
+                  width: 2.5,
+                ),
+                color: isCompleted ? Colors.green : Colors.transparent,
+                boxShadow: isCompleted
+                    ? [
+                        BoxShadow(
+                          color: Colors.green.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
               ),
-              color: isCompleted ? Colors.green : Colors.transparent,
-              boxShadow: isCompleted
-                  ? [
-                      BoxShadow(
-                        color: Colors.green.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        spreadRadius: 1,
-                      ),
-                    ]
+              child: isCompleted
+                  ? const Icon(
+                      Icons.check,
+                      size: 20,
+                      color: Colors.white,
+                    )
                   : null,
             ),
-            child: isCompleted
-                ? const Icon(
-                    Icons.check,
-                    size: 20,
-                    color: Colors.white,
-                  )
-                : null,
           ),
         ),
       ),

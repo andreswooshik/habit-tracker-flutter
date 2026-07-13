@@ -11,93 +11,87 @@ class AppTheme {
   static const Color primaryColorSeed = Colors.deepPurple;
 
   /// Light theme configuration
-  static ThemeData lightTheme = ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: primaryColorSeed,
-      brightness: Brightness.light,
-    ),
-    useMaterial3: true,
-    
-    // Card theme
-    cardTheme: CardThemeData(
-      elevation: AppConstants.cardElevationLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-      ),
-    ),
+  static ThemeData lightTheme = _buildTheme(Brightness.light);
 
-    // AppBar theme
-    appBarTheme: const AppBarTheme(
-      centerTitle: false,
-      elevation: 0,
-    ),
+  /// Dark theme configuration
+  static ThemeData darkTheme = _buildTheme(Brightness.dark);
 
-    // Input decoration theme
-    inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+  /// Shared theme builder so light and dark stay in sync
+  /// (only the color scheme brightness differs)
+  static ThemeData _buildTheme(Brightness brightness) {
+    return ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryColorSeed,
+        brightness: brightness,
       ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppConstants.paddingMedium,
-        vertical: AppConstants.paddingMedium,
-      ),
-    ),
+      useMaterial3: true,
 
-    // Button themes
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppConstants.paddingLarge,
-          vertical: AppConstants.paddingMedium,
-        ),
+      // Card theme
+      cardTheme: CardThemeData(
+        elevation: AppConstants.cardElevationLow,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
         ),
       ),
-    ),
 
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppConstants.paddingLarge,
-          vertical: AppConstants.paddingMedium,
-        ),
-        shape: RoundedRectangleBorder(
+      // AppBar theme
+      appBarTheme: const AppBarTheme(
+        centerTitle: false,
+        elevation: 0,
+      ),
+
+      // Input decoration theme
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
         ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.paddingMedium,
+          vertical: AppConstants.paddingMedium,
+        ),
       ),
-    ),
 
-    // Icon theme
-    iconTheme: const IconThemeData(
-      size: AppConstants.iconSizeMedium,
-    ),
-
-    // Floating Action Button theme
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      elevation: AppConstants.cardElevationMedium,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+      // Button themes
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.paddingLarge,
+            vertical: AppConstants.paddingMedium,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(AppConstants.borderRadiusMedium),
+          ),
+        ),
       ),
-    ),
-  );
 
-  /// Dark theme configuration (for future implementation)
-  static ThemeData darkTheme = ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: primaryColorSeed,
-      brightness: Brightness.dark,
-    ),
-    useMaterial3: true,
-    
-    // Card theme
-    cardTheme: CardThemeData(
-      elevation: AppConstants.cardElevationLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.paddingLarge,
+            vertical: AppConstants.paddingMedium,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(AppConstants.borderRadiusMedium),
+          ),
+        ),
       ),
-    ),
-  );
+
+      // Icon theme
+      iconTheme: const IconThemeData(
+        size: AppConstants.iconSizeMedium,
+      ),
+
+      // Floating Action Button theme
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        elevation: AppConstants.cardElevationMedium,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+        ),
+      ),
+    );
+  }
 
   /// Get category color - extracted for reusability
   static Color getCategoryColor(dynamic category) {

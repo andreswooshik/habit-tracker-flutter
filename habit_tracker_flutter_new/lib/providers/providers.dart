@@ -41,3 +41,9 @@ export 'weekly_summary_providers.dart';
 
 // Smart habit recommendations state
 export 'recommendation_providers.dart';
+
+// Theme mode (light / dark / system)
+export 'theme_providers.dart';
+
+// Smart habit reminders
+export 'notification_providers.dart';
