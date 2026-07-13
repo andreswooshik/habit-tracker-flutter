@@ -92,6 +92,17 @@ class Habit extends Equatable {
     return frequency.isScheduledFor(date, customDays);
   }
 
+  /// Whether the habit already existed on [date] (creation day inclusive).
+  ///
+  /// Screens showing past days must combine this with [isScheduledFor],
+  /// otherwise a habit created today would appear as scheduled (and
+  /// missed) on days before it existed.
+  bool existedOn(DateTime date) {
+    final day = DateTime(date.year, date.month, date.day);
+    final createdDay = DateTime(createdAt.year, createdAt.month, createdAt.day);
+    return !day.isBefore(createdDay);
+  }
+
   /// Validates that the habit data is correct
   bool get isValid {
     // Name must not be empty

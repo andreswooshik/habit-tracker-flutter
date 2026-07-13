@@ -118,7 +118,7 @@ class _StreakEntry extends StatelessWidget {
       case 1:
         return Colors.amber;
       case 2:
-        return Colors.grey.shade400;
+        return Colors.grey;
       case 3:
         return Colors.brown.shade300;
       default:

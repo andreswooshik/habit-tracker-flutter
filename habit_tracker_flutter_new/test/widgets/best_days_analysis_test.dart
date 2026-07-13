@@ -30,6 +30,16 @@ void main() {
     return DateTime(now.year, now.month, now.day);
   }
 
+  Habit dailyHabit({required DateTime createdAt}) {
+    return Habit(
+      id: '1',
+      name: 'Daily',
+      frequency: HabitFrequency.everyDay,
+      category: HabitCategory.health,
+      createdAt: createdAt,
+    );
+  }
+
   group('BestDaysAnalysis', () {
     testWidgets('shows the empty state when no day has data',
         (tester) async {
@@ -46,23 +56,71 @@ void main() {
       final element = tester.element(find.byType(BestDaysAnalysis));
       final container = ProviderScope.containerOf(element);
 
-      // Habit created today: only today's weekday has any data
-      container.read(habitsProvider.notifier).addHabit(
-            Habit(
-              id: '1',
-              name: 'Daily',
-              frequency: HabitFrequency.everyDay,
-              category: HabitCategory.health,
-              createdAt: today(),
-            ),
-          );
+      container
+          .read(habitsProvider.notifier)
+          .addHabit(dailyHabit(createdAt: today()));
       container.read(completionsProvider.notifier).markComplete('1', today());
       await tester.pump();
 
-      // Average across the week is 100% (1 day of data, fully done),
-      // not ~14% from six no-data days averaged in as zeros
       expect(find.text('100%'), findsWidgets);
       expect(find.text('14%'), findsNothing);
+    });
+
+    testWidgets(
+        'shows the low-confidence banner while under a week of data',
+        (tester) async {
+      await tester.pumpWidget(buildTestApp());
+
+      final element = tester.element(find.byType(BestDaysAnalysis));
+      final container = ProviderScope.containerOf(element);
+
+      container
+          .read(habitsProvider.notifier)
+          .addHabit(dailyHabit(createdAt: today()));
+      container.read(completionsProvider.notifier).markComplete('1', today());
+      await tester.pump();
+
+      expect(
+        find.textContaining('just getting started'),
+        findsOneWidget,
+      );
+      // With a single tracked day there is no Focus tile yet
+      expect(find.text('Focus day'), findsNothing);
+      expect(find.text('Average'), findsOneWidget);
+    });
+
+    testWidgets(
+        'with an established history shows the strongest/slip sentence '
+        'and Best/Focus tiles, without the banner', (tester) async {
+      await tester.pumpWidget(buildTestApp());
+
+      final element = tester.element(find.byType(BestDaysAnalysis));
+      final container = ProviderScope.containerOf(element);
+
+      // 10 days of history; only yesterday completed → yesterday's
+      // weekday is the best day, everything else trails
+      container.read(habitsProvider.notifier).addHabit(
+            dailyHabit(
+              createdAt: today().subtract(const Duration(days: 9)),
+            ),
+          );
+      container.read(completionsProvider.notifier).loadCompletions({
+        '1': {today().subtract(const Duration(days: 1))},
+      });
+      await tester.pump();
+
+      expect(find.textContaining("You're strongest on"), findsOneWidget);
+      expect(find.text('Best day'), findsOneWidget);
+      expect(find.text('Focus day'), findsOneWidget);
+      expect(find.textContaining('just getting started'), findsNothing);
+      // The historical card carries no weekday bar list anymore —
+      // day names appear only in the tiles (at most best + focus)
+      expect(
+        tester.widgetList(find.text('Mon')).length +
+            tester.widgetList(find.text('Tue')).length +
+            tester.widgetList(find.text('Wed')).length,
+        lessThanOrEqualTo(2),
+      );
     });
   });
 }

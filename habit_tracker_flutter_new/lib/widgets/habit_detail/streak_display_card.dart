@@ -43,12 +43,12 @@ class StreakDisplayCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Current Streak',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   if (isAtRisk)
@@ -114,9 +114,9 @@ class StreakDisplayCard extends StatelessWidget {
                       ),
                       Text(
                         currentStreak == 1 ? 'day' : 'days',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
-                          color: Colors.black54,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -130,10 +130,10 @@ class StreakDisplayCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Colors.grey.shade200,
+                    color: Theme.of(context).colorScheme.outlineVariant,
                   ),
                 ),
                 child: Row(
@@ -147,11 +147,12 @@ class StreakDisplayCard extends StatelessWidget {
                           size: 20,
                         ),
                         const SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Best Streak',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.black54,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -201,7 +202,7 @@ class StreakDisplayCard extends StatelessWidget {
 
               // Milestone Message
               if (currentStreak > 0 && !isAtRisk)
-                _buildMilestoneMessage(currentStreak),
+                _buildMilestoneMessage(context, currentStreak),
             ],
           ),
         ),
@@ -209,7 +210,7 @@ class StreakDisplayCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMilestoneMessage(int streak) {
+  Widget _buildMilestoneMessage(BuildContext context, int streak) {
     final nextMilestone = _getNextMilestone(streak);
     final daysToMilestone = nextMilestone - streak;
 
@@ -250,9 +251,9 @@ class StreakDisplayCard extends StatelessWidget {
       padding: const EdgeInsets.only(top: 16),
       child: Text(
         '$daysToMilestone more ${daysToMilestone == 1 ? 'day' : 'days'} until $nextMilestone-day milestone!',
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
-          color: Colors.black54,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
           fontStyle: FontStyle.italic,
         ),
         textAlign: TextAlign.center,

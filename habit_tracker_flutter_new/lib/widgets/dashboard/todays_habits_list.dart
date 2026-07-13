@@ -40,7 +40,7 @@ class TodaysHabitsList extends ConsumerWidget {
               Icon(
                 Icons.check_circle_outline,
                 size: 64,
-                color: Colors.grey.shade300,
+                color: Theme.of(context).colorScheme.outlineVariant,
               ),
               const SizedBox(height: 16),
               Text(
@@ -143,6 +143,11 @@ class TodaysHabitsList extends ConsumerWidget {
                       child: HabitCard(
                         habit: habit,
                         selectedDate: selectedDate,
+                        // Distinct from the Habits tab's card, which
+                        // stays mounted alongside this one in the
+                        // shell's IndexedStack — same tag on both
+                        // would crash the hero flight
+                        heroTag: 'today_habit_${habit.id}',
                       ),
                     )),
                 const SizedBox(height: 16),
@@ -163,6 +168,7 @@ class TodaysHabitsList extends ConsumerWidget {
                       child: HabitCard(
                         habit: habit,
                         selectedDate: selectedDate,
+                        heroTag: 'today_habit_${habit.id}',
                       ),
                     )),
               ],

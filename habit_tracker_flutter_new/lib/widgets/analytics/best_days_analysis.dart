@@ -3,19 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/providers/analytics_providers.dart';
 import 'package:habit_tracker_flutter_new/utils/app_constants.dart';
 
-/// Best Days Analysis Card
-/// Shows which days of the week have highest/lowest completion rates
+/// Best Days insight card — the historical aggregate.
+///
+/// Deliberately contains NO weekday timeline: a per-day bar list reads
+/// as "this week's scorecard", so a Monday user sees "Tue 0%" and
+/// feels they failed a day that hasn't happened. The current cycle
+/// lives in ThisWeekCard; this card answers "what's my typical week?"
+/// with a sentence and two stat tiles, plus a confidence banner while
+/// the sample is still too small to judge.
 class BestDaysAnalysis extends ConsumerWidget {
   const BestDaysAnalysis({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final weekdayData = ref.watch(weekdayPerformanceProvider);
+    final timeRange = ref.watch(selectedTimeRangeProvider);
+    final trackedDays = ref.watch(trackedDaysCountProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
     // Only weekdays that had scheduled habits carry signal — a day
-    // with nothing scheduled is "no data", not 0% performance, and
-    // must not drag down the average or count as the worst day
+    // with nothing scheduled is "no data", not 0% performance
     final daysWithData =
         weekdayData.where((d) => d.totalScheduled > 0).toList();
 
@@ -55,7 +62,7 @@ class BestDaysAnalysis extends ConsumerWidget {
                 Icon(Icons.calendar_today, color: colorScheme.primary),
                 SizedBox(width: AppConstants.spacingSmall),
                 Text(
-                  'Best Days Analysis',
+                  'Best Days',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -64,241 +71,115 @@ class BestDaysAnalysis extends ConsumerWidget {
             ),
             SizedBox(height: AppConstants.spacingSmall),
             Text(
-              'Your performance by day of week',
+              // "typical" + the explicit window keep this from reading
+              // as the current week's scorecard
+              'Your typical week · averaged over the ${timeRange.description}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
             ),
             SizedBox(height: AppConstants.spacingLarge),
-            
-            // Bar chart
-            ...weekdayData.map((day) {
-              final isMaxHeight = day.totalScheduled > 0 &&
-                  day.completionRate == bestDay.completionRate;
-              final barColor = isMaxHeight ? Colors.green : colorScheme.primary;
-              
-              return Padding(
-                padding: EdgeInsets.only(bottom: AppConstants.spacingMedium),
-                child: _DayBar(
-                  dayName: day.dayName,
-                  completionRate: day.completionRate,
-                  color: barColor,
-                  totalScheduled: day.totalScheduled,
-                  totalCompleted: day.totalCompleted,
-                ),
-              );
-            }),
-            
-            SizedBox(height: AppConstants.spacingLarge),
-            
-            // Insights
-            _DayInsights(
-              bestDay: bestDay,
-              worstDay: worstDay,
-              avgRate: avgRate,
+            Text(
+              _insightSentence(daysWithData, bestDay, worstDay),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
+            SizedBox(height: AppConstants.spacingLarge),
+            Row(
+              children: [
+                Expanded(
+                  child: _MiniStat(
+                    icon: Icons.trending_up,
+                    label: 'Best day',
+                    value: bestDay.dayName,
+                    subtitle: _percent(bestDay.completionRate),
+                    color: Colors.green,
+                  ),
+                ),
+                SizedBox(width: AppConstants.spacingSmall),
+                Expanded(
+                  child: daysWithData.length > 1
+                      ? _MiniStat(
+                          icon: Icons.flag_outlined,
+                          label: 'Focus day',
+                          value: worstDay.dayName,
+                          subtitle: _percent(worstDay.completionRate),
+                          color: colorScheme.primary,
+                        )
+                      : _MiniStat(
+                          icon: Icons.analytics,
+                          label: 'Average',
+                          value: _percent(avgRate),
+                          subtitle: 'across tracked days',
+                          color: Colors.blue,
+                        ),
+                ),
+              ],
+            ),
+            // Small samples produce loud, meaningless percentages —
+            // say so instead of presenting them as verdicts
+            if (trackedDays < 7) ...[
+              SizedBox(height: AppConstants.spacingMedium),
+              _ConfidenceBanner(trackedDays: trackedDays),
+            ],
           ],
         ),
       ),
     );
   }
-}
 
-class _DayBar extends StatelessWidget {
-  final String dayName;
-  final double completionRate;
-  final Color color;
-  final int totalScheduled;
-  final int totalCompleted;
+  String _percent(double rate) => '${(rate * 100).toStringAsFixed(0)}%';
 
-  const _DayBar({
-    required this.dayName,
-    required this.completionRate,
-    required this.color,
-    required this.totalScheduled,
-    required this.totalCompleted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SizedBox(
-              width: 60,
-              child: Text(
-                dayName,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppConstants.paddingMedium),
-                child: Stack(
-                  children: [
-                    Container(
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
-                      ),
-                    ),
-                    FractionallySizedBox(
-                      widthFactor: completionRate,
-                      child: Container(
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 80,
-              // Scale down instead of overflowing when the label is
-              // wide, e.g. "100% (12/12)"
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerRight,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${(completionRate * 100).toStringAsFixed(0)}%',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: color,
-                          ),
-                    ),
-                    SizedBox(width: AppConstants.spacingSmall),
-                    Text(
-                      '($totalCompleted/$totalScheduled)',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
+  String _insightSentence(
+    List<DayPerformance> daysWithData,
+    DayPerformance bestDay,
+    DayPerformance worstDay,
+  ) {
+    if (daysWithData.length == 1) {
+      return '${bestDay.fullDayName}s are off to a '
+          '${_percent(bestDay.completionRate)} start — more insights as '
+          'you keep tracking.';
+    }
+    if (bestDay.completionRate == worstDay.completionRate) {
+      return 'Steady ${_percent(bestDay.completionRate)} across your '
+          'tracked days — consistency looks good.';
+    }
+    return 'You\'re strongest on ${bestDay.fullDayName}s '
+        '(${_percent(bestDay.completionRate)}) and tend to slip on '
+        '${worstDay.fullDayName}s (${_percent(worstDay.completionRate)}).';
   }
 }
 
-class _DayInsights extends StatelessWidget {
-  final DayPerformance bestDay;
-  final DayPerformance worstDay;
-  final double avgRate;
+class _ConfidenceBanner extends StatelessWidget {
+  final int trackedDays;
 
-  const _DayInsights({
-    required this.bestDay,
-    required this.worstDay,
-    required this.avgRate,
-  });
-
-  String _getInsightText() {
-    if (bestDay.completionRate > 0.8) {
-      return '${bestDay.fullDayName}s are your powerhouse days! Keep up the momentum.';
-    } else if (worstDay.completionRate < 0.5 && worstDay.totalScheduled > 0) {
-      return '${worstDay.fullDayName}s need attention. Consider rescheduling demanding habits.';
-    } else if (avgRate > 0.7) {
-      return 'Consistent performance across the week! Well done.';
-    } else {
-      return 'Focus on improving ${worstDay.fullDayName}s to boost your overall completion rate.';
-    }
-  }
-
-  IconData _getInsightIcon() {
-    if (bestDay.completionRate > 0.8) {
-      return Icons.celebration;
-    } else if (worstDay.completionRate < 0.5) {
-      return Icons.info_outline;
-    } else {
-      return Icons.tips_and_updates;
-    }
-  }
-
-  Color _getInsightColor(BuildContext context) {
-    if (bestDay.completionRate > 0.8) {
-      return Colors.green;
-    } else if (worstDay.completionRate < 0.5) {
-      return Colors.orange;
-    } else {
-      return Theme.of(context).colorScheme.primary;
-    }
-  }
+  const _ConfidenceBanner({required this.trackedDays});
 
   @override
   Widget build(BuildContext context) {
-    final insightColor = _getInsightColor(context);
-    
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: EdgeInsets.all(AppConstants.paddingMedium),
       decoration: BoxDecoration(
-        color: insightColor.withValues(alpha: 0.1),
+        color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        border: Border.all(
-          color: insightColor.withValues(alpha: 0.3),
-          width: 1,
-        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(_getInsightIcon(), color: insightColor, size: 20),
-              SizedBox(width: AppConstants.spacingSmall),
-              Text(
-                'Insight',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: insightColor,
-                    ),
-              ),
-            ],
+          Icon(
+            Icons.hourglass_top,
+            size: 20,
+            color: colorScheme.onSecondaryContainer,
           ),
-          SizedBox(height: AppConstants.spacingSmall),
-          Text(
-            _getInsightText(),
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          SizedBox(height: AppConstants.spacingMedium),
-          Row(
-            children: [
-              Expanded(
-                child: _MiniStat(
-                  icon: Icons.trending_up,
-                  label: 'Best Day',
-                  value: bestDay.dayName,
-                  subtitle: '${(bestDay.completionRate * 100).toStringAsFixed(0)}%',
-                  color: Colors.green,
-                ),
-              ),
-              SizedBox(width: AppConstants.spacingSmall),
-              Expanded(
-                child: _MiniStat(
-                  icon: Icons.analytics,
-                  label: 'Average',
-                  value: '${(avgRate * 100).toStringAsFixed(0)}%',
-                  subtitle: 'across week',
-                  color: Colors.blue,
-                ),
-              ),
-            ],
+          SizedBox(width: AppConstants.spacingSmall),
+          Expanded(
+            child: Text(
+              'You\'re just getting started — only $trackedDays '
+              '${trackedDays == 1 ? 'day' : 'days'} tracked so far. These '
+              'insights get sharper after a week or two.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSecondaryContainer,
+                  ),
+            ),
           ),
         ],
       ),
@@ -326,8 +207,9 @@ class _MiniStat extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(AppConstants.paddingSmall),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

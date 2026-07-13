@@ -16,9 +16,12 @@ final scheduledHabitsForDateProvider =
   // Get all habits
   final habitState = ref.watch(habitsProvider);
 
-  // Filter to active habits scheduled for the date
+  // Filter to active habits that existed on and are scheduled for the date
   final scheduledHabits = habitState.habits
-      .where((habit) => !habit.isArchived && habit.isScheduledFor(date))
+      .where((habit) =>
+          !habit.isArchived &&
+          habit.existedOn(date) &&
+          habit.isScheduledFor(date))
       .toList();
 
   // Get completion state to sort completed habits last

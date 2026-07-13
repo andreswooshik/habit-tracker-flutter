@@ -52,7 +52,7 @@ class ConsistencyTracker extends ConsumerWidget {
                     Text(
                       '$completedToday of $totalToday completed',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.black54,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                     ),
                     Text(
@@ -70,7 +70,7 @@ class ConsistencyTracker extends ConsumerWidget {
                   child: LinearProgressIndicator(
                     value: todayProgress,
                     minHeight: 12,
-                    backgroundColor: Colors.grey.shade200,
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       _getProgressColor(todayProgress),
                     ),
@@ -147,9 +147,9 @@ class ConsistencyTracker extends ConsumerWidget {
           ),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
-              color: Colors.black54,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),

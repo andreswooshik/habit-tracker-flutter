@@ -7,11 +7,16 @@ class HabitDetailAppBar extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
+  /// Tag of the card hero this screen was opened from — must match the
+  /// tapped HabitCard's tag exactly, or the flight animation is a no-op
+  final String heroTag;
+
   const HabitDetailAppBar({
     super.key,
     required this.habit,
     required this.onEdit,
     required this.onDelete,
+    required this.heroTag,
   });
 
   @override
@@ -19,10 +24,26 @@ class HabitDetailAppBar extends StatelessWidget {
     final styleService = CategoryStyleService();
     final categoryColor = styleService.getColor(habit.category);
 
+    // Keep pointer feedback visible on the colored header without the
+    // default dark focus circle + "Back" tooltip pill that stick to the
+    // buttons on web/desktop after a click
+    final onHeaderButtonStyle = IconButton.styleFrom(
+      foregroundColor: Colors.white,
+      hoverColor: Colors.white.withValues(alpha: 0.12),
+      focusColor: Colors.white.withValues(alpha: 0.18),
+      highlightColor: Colors.white.withValues(alpha: 0.12),
+    );
+
     return SliverAppBar(
       expandedHeight: 200,
       pinned: true,
       backgroundColor: categoryColor,
+      foregroundColor: Colors.white,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        style: onHeaderButtonStyle,
+        onPressed: () => Navigator.of(context).maybePop(),
+      ),
       flexibleSpace: FlexibleSpaceBar(
         titlePadding:
             const EdgeInsetsDirectional.only(start: 56, bottom: 16, end: 96),
@@ -57,7 +78,7 @@ class HabitDetailAppBar extends StatelessWidget {
                   // Paired with the habit card's Hero so the card flies
                   // into this icon on navigation
                   Hero(
-                    tag: 'habit_card_${habit.id}',
+                    tag: heroTag,
                     child: Icon(
                       styleService.getIcon(habit.category),
                       size: 64,
@@ -80,12 +101,14 @@ class HabitDetailAppBar extends StatelessWidget {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.edit, color: Colors.white),
+          icon: const Icon(Icons.edit),
+          style: onHeaderButtonStyle,
           onPressed: onEdit,
           tooltip: 'Edit Habit',
         ),
         IconButton(
-          icon: const Icon(Icons.delete, color: Colors.white),
+          icon: const Icon(Icons.delete),
+          style: onHeaderButtonStyle,
           onPressed: onDelete,
           tooltip: 'Delete Habit',
         ),

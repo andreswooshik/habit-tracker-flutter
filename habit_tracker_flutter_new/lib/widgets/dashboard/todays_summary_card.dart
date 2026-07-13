@@ -49,7 +49,7 @@ class TodaysSummaryCard extends ConsumerWidget {
             Text(
               'Let\'s make today count!',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.black54,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
 
@@ -71,7 +71,7 @@ class TodaysSummaryCard extends ConsumerWidget {
                         child: CircularProgressIndicator(
                           value: todaysProgress,
                           strokeWidth: 12,
-                          backgroundColor: Colors.grey.shade200,
+                          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                           valueColor: AlwaysStoppedAnimation<Color>(
                             _getProgressColor(todaysProgress),
                           ),
@@ -94,7 +94,7 @@ class TodaysSummaryCard extends ConsumerWidget {
                             'Complete',
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Colors.black54,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     ),
                           ),
                         ],
@@ -149,7 +149,7 @@ class TodaysSummaryCard extends ConsumerWidget {
                                 .titleMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                           ),
                         ],

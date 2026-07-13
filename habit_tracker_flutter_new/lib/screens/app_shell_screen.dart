@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/screens/ai_chat_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/analytics_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/habit_list_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/home_dashboard_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/settings_screen.dart';
 
-class AppShellScreen extends StatefulWidget {
+class AppShellScreen extends ConsumerStatefulWidget {
   const AppShellScreen({super.key});
 
   @override
-  State<AppShellScreen> createState() => _AppShellScreenState();
+  ConsumerState<AppShellScreen> createState() => _AppShellScreenState();
 }
 
-class _AppShellScreenState extends State<AppShellScreen> {
+class _AppShellScreenState extends ConsumerState<AppShellScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Schedule smart reminders once the first frame (and providers) are up
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(reminderSchedulerProvider).reschedule();
+    });
+  }
 
   static const _destinations = [
     _AppDestination(
@@ -53,6 +64,15 @@ class _AppShellScreenState extends State<AppShellScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Keep scheduled reminders in step with the data: completing a habit
+    // drops its reminder, adding one schedules it
+    ref.listen(completionsProvider, (previous, next) {
+      ref.read(reminderSchedulerProvider).reschedule();
+    });
+    ref.listen(habitsProvider, (previous, next) {
+      ref.read(reminderSchedulerProvider).reschedule();
+    });
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final useRail = constraints.maxWidth >= 800;
@@ -61,6 +81,10 @@ class _AppShellScreenState extends State<AppShellScreen> {
           appBar: AppBar(
             title: Text(_destinations[_selectedIndex].label),
             centerTitle: false,
+            actions: const [
+              _SyncStatusIndicator(),
+              SizedBox(width: 8),
+            ],
           ),
           body: Row(
             children: [
@@ -123,4 +147,45 @@ class _AppDestination {
     required this.icon,
     required this.selectedIcon,
   });
+}
+
+/// Cloud sync status in the app bar (cloud mode only).
+///
+/// Turns the invisible offline-first behavior into something users can
+/// trust: a checkmark cloud when everything is synced, and a badged
+/// upload cloud (tap to retry) while writes wait for a connection.
+class _SyncStatusIndicator extends ConsumerWidget {
+  const _SyncStatusIndicator();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final coordinator = ref.watch(cloudSyncCoordinatorProvider);
+    // Local-only mode: no cloud, nothing to indicate
+    if (coordinator == null) return const SizedBox.shrink();
+
+    return ValueListenableBuilder<int>(
+      valueListenable: coordinator.pendingCount,
+      builder: (context, pending, _) {
+        if (pending == 0) {
+          return Tooltip(
+            message: 'All changes synced',
+            child: Icon(
+              Icons.cloud_done_outlined,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          );
+        }
+        return IconButton(
+          tooltip:
+              '$pending change${pending == 1 ? '' : 's'} waiting to sync — '
+              'tap to retry',
+          onPressed: coordinator.flush,
+          icon: Badge.count(
+            count: pending,
+            child: const Icon(Icons.cloud_upload_outlined),
+          ),
+        );
+      },
+    );
+  }
 }

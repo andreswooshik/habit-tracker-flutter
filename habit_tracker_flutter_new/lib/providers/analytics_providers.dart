@@ -15,6 +15,21 @@ enum TimeRange {
   final int days; // -1 means all time
 
   const TimeRange(this.label, this.days);
+
+  /// Human phrasing for card subtitles, e.g. "last 30 days" — makes it
+  /// obvious the analytics are historical, not about the current week
+  String get description {
+    switch (this) {
+      case TimeRange.week:
+        return 'last 7 days';
+      case TimeRange.month:
+        return 'last 30 days';
+      case TimeRange.year:
+        return 'last 365 days';
+      case TimeRange.allTime:
+        return 'all time';
+    }
+  }
 }
 
 /// Selected time range provider
@@ -66,20 +81,6 @@ final effectiveDateRangeProvider = Provider<DateRange>((ref) {
   return DateRange(start: start, end: end);
 });
 
-/// True when [date] falls before the day [habit] was created
-///
-/// Analytics must not count a day as "scheduled" if the habit didn't
-/// exist yet — otherwise new habits show misleading 0% rates over
-/// days they could never have been completed on.
-bool _isBeforeCreation(DateTime date, Habit habit) {
-  final createdDay = DateTime(
-    habit.createdAt.year,
-    habit.createdAt.month,
-    habit.createdAt.day,
-  );
-  return date.isBefore(createdDay);
-}
-
 /// Category performance data
 class CategoryPerformance {
   final String categoryName;
@@ -111,7 +112,7 @@ final categoryPerformanceProvider = Provider<List<CategoryPerformance>>((ref) {
     int totalCompleted = 0;
 
     for (final date in dateRange.days) {
-      if (_isBeforeCreation(date, habit)) continue;
+      if (!habit.existedOn(date)) continue;
       if (habit.isScheduledFor(date)) {
         totalScheduled++;
         final habitCompletions = completions[habit.id] ?? {};
@@ -185,7 +186,7 @@ final weekdayPerformanceProvider = Provider<List<DayPerformance>>((ref) {
     for (final date in dateRange.days) {
       if (date.weekday == weekday) {
         for (final habit in habits) {
-          if (_isBeforeCreation(date, habit)) continue;
+          if (!habit.existedOn(date)) continue;
           if (habit.isScheduledFor(date)) {
             totalScheduled++;
             final habitCompletions = completions[habit.id] ?? {};
@@ -207,6 +208,25 @@ final weekdayPerformanceProvider = Provider<List<DayPerformance>>((ref) {
   return List.from(weekdayMap.values);
 });
 
+/// How many days in the selected range actually had habits scheduled.
+///
+/// The "confidence" signal for aggregate cards: with under a week of
+/// tracked days, averages are noise and the UI should say so instead
+/// of presenting them as verdicts.
+final trackedDaysCountProvider = Provider<int>((ref) {
+  final habits = ref.watch(habitsProvider).habits;
+  final dateRange = ref.watch(effectiveDateRangeProvider);
+
+  var trackedDays = 0;
+  for (final date in dateRange.days) {
+    final hadHabits = habits.any(
+      (habit) => habit.existedOn(date) && habit.isScheduledFor(date),
+    );
+    if (hadHabits) trackedDays++;
+  }
+  return trackedDays;
+});
+
 /// Completion trend data (daily completion rates)
 final completionTrendProvider = Provider<List<CompletionTrendPoint>>((ref) {
   final habits = ref.watch(habitsProvider).habits;
@@ -220,7 +240,7 @@ final completionTrendProvider = Provider<List<CompletionTrendPoint>>((ref) {
     int totalCompleted = 0;
 
     for (final habit in habits) {
-      if (_isBeforeCreation(date, habit)) continue;
+      if (!habit.existedOn(date)) continue;
       if (habit.isScheduledFor(date)) {
         totalScheduled++;
         final habitCompletions = completions[habit.id] ?? {};
