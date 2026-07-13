@@ -60,9 +60,9 @@ class StatsCard extends StatelessWidget {
             Flexible(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: Colors.black54,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ),
                 maxLines: 2,
@@ -90,9 +90,9 @@ class StatsCard extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 subtitle!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
-                  color: Colors.black45,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

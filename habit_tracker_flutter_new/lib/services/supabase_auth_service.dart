@@ -49,7 +49,7 @@ class SupabaseAuthService implements IAuthService {
       }
       return AuthResult.success(user);
     } on AuthException catch (e) {
-      return AuthResult.failure(e.message);
+      return AuthResult.failure(friendlyAuthMessage(e));
     } catch (_) {
       return const AuthResult.failure('Sign up failed. Please try again.');
     }
@@ -71,7 +71,7 @@ class SupabaseAuthService implements IAuthService {
       }
       return AuthResult.success(user);
     } on AuthException catch (e) {
-      return AuthResult.failure(e.message);
+      return AuthResult.failure(friendlyAuthMessage(e));
     } catch (_) {
       return const AuthResult.failure('Sign in failed. Please try again.');
     }
@@ -79,6 +79,41 @@ class SupabaseAuthService implements IAuthService {
 
   @override
   Future<void> signOut() => _auth.signOut();
+
+  /// Translates a Supabase [AuthException] into a message fit for the
+  /// login/register screens — users should never see raw exception text
+  /// like "ClientException: Failed to fetch, uri=…".
+  ///
+  /// Static and pure so it can be unit-tested without a client.
+  static String friendlyAuthMessage(AuthException e) {
+    // Network-level failures (offline, DNS, blocked request)
+    if (e is AuthRetryableFetchException ||
+        e.message.contains('Failed to fetch') ||
+        e.message.contains('SocketException') ||
+        e.message.contains('ClientException')) {
+      return 'Can\'t reach the server. Check your internet connection '
+          'and try again.';
+    }
+
+    switch (e.code) {
+      case 'invalid_credentials':
+        return 'Incorrect email or password.';
+      case 'email_not_confirmed':
+        return 'Please confirm your email first — check your inbox.';
+      case 'user_already_exists':
+      case 'email_exists':
+        return 'An account with this email already exists. Try signing in.';
+      case 'weak_password':
+        return 'That password is too weak — use at least 6 characters.';
+      case 'over_request_rate_limit':
+        return 'Too many attempts. Wait a moment and try again.';
+      case 'user_banned':
+        return 'This account is currently disabled.';
+    }
+
+    // Other Supabase auth messages are generally human-readable
+    return e.message;
+  }
 
   AppUser? _toAppUser(User? user) {
     if (user == null) return null;

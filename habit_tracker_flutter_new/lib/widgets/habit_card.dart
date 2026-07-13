@@ -14,6 +14,12 @@ class HabitCard extends ConsumerWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
+  /// Hero tag for the card → detail flight. Surfaces that can be alive
+  /// at the same time (habit list, dashboard's today list — both stay
+  /// mounted in the shell's IndexedStack) MUST pass distinct tags, or
+  /// Flutter throws "multiple heroes share the same tag".
+  final String? heroTag;
+
   const HabitCard({
     super.key,
     required this.habit,
@@ -21,7 +27,10 @@ class HabitCard extends ConsumerWidget {
     this.onTap,
     this.onEdit,
     this.onDelete,
+    this.heroTag,
   });
+
+  String get _effectiveHeroTag => heroTag ?? 'habit_card_${habit.id}';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -61,7 +70,7 @@ class HabitCard extends ConsumerWidget {
         }
       },
       child: Hero(
-        tag: 'habit_card_${habit.id}',
+        tag: _effectiveHeroTag,
         child: Material(
           type: MaterialType.transparency,
           child: Card(
@@ -72,7 +81,7 @@ class HabitCard extends ConsumerWidget {
               side: BorderSide(
                 color: isCompleted
                     ? Colors.green.withValues(alpha: 0.3)
-                    : Colors.grey.withValues(alpha: 0.2),
+                    : Theme.of(context).colorScheme.outlineVariant,
                 width: 1,
               ),
             ),
@@ -167,8 +176,8 @@ class HabitCard extends ConsumerWidget {
                   color: isCompleted
                       ? Colors.green
                       : (canToggle
-                          ? Colors.grey.shade400
-                          : Colors.grey.shade300),
+                          ? Theme.of(context).colorScheme.outline
+                          : Theme.of(context).colorScheme.outlineVariant),
                   width: 2.5,
                 ),
                 color: isCompleted ? Colors.green : Colors.transparent,
@@ -379,7 +388,12 @@ class HabitCard extends ConsumerWidget {
   void _navigateToDetail(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => HabitDetailScreen(habit: habit),
+        // Pass this card's tag so the hero flight starts from the card
+        // that was actually tapped, whichever surface it lives on
+        builder: (_) => HabitDetailScreen(
+          habitId: habit.id,
+          heroTag: _effectiveHeroTag,
+        ),
       ),
     );
   }

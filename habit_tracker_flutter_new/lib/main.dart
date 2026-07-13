@@ -6,6 +6,7 @@ import 'package:habit_tracker_flutter_new/config/api_keys.dart';
 import 'package:habit_tracker_flutter_new/config/app_theme.dart';
 import 'package:habit_tracker_flutter_new/providers/repository_providers.dart';
 import 'package:habit_tracker_flutter_new/providers/notification_providers.dart';
+import 'package:habit_tracker_flutter_new/providers/sync_providers.dart';
 import 'package:habit_tracker_flutter_new/providers/theme_providers.dart';
 import 'package:habit_tracker_flutter_new/screens/app_shell_screen.dart';
 import 'package:habit_tracker_flutter_new/screens/auth/auth_gate.dart';
@@ -46,6 +47,7 @@ void main() async {
   // local-only on Hive, no login.
   final IHabitsRepository habitsRepository;
   final ICompletionsRepository completionsRepository;
+  CloudSyncCoordinator? syncCoordinator;
 
   if (ApiKeys.supabaseConfigured) {
     await Supabase.initialize(
@@ -60,6 +62,7 @@ void main() async {
       remoteHabits: SupabaseHabitsRepository(),
       remoteCompletions: SupabaseCompletionsRepository(),
     );
+    syncCoordinator = coordinator;
 
     habitsRepository = SyncedHabitsRepository(
       local: HiveHabitsRepository(),
@@ -108,6 +111,7 @@ void main() async {
         completionsRepositoryProvider.overrideWithValue(completionsRepository),
         settingsRepositoryProvider.overrideWithValue(settingsRepository),
         notificationServiceProvider.overrideWithValue(notificationService),
+        cloudSyncCoordinatorProvider.overrideWithValue(syncCoordinator),
       ],
       child: const MyApp(),
     ),

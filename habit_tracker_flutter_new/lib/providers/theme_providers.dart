@@ -16,7 +16,9 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
 
   static ThemeMode _initialMode(ISettingsRepository settings) {
     final stored = settings.getString(settingsKey);
-    return ThemeMode.values.asNameMap()[stored] ?? ThemeMode.system;
+    // Default to light — the app should not follow a dark OS theme
+    // unless the user explicitly picks Dark or System in Settings
+    return ThemeMode.values.asNameMap()[stored] ?? ThemeMode.light;
   }
 
   Future<void> setMode(ThemeMode mode) async {

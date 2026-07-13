@@ -37,17 +37,14 @@ class WeeklyPerformanceChart extends ConsumerWidget {
       today.subtract(const Duration(days: 7)),
     );
 
-    final currentAvg = weekData.fold<double>(
-          0,
-          (sum, data) => sum + data.completionRate,
-        ) /
-        weekData.length;
-    final previousAvg = previousWeekData.fold<double>(
-          0,
-          (sum, data) => sum + data.completionRate,
-        ) /
-        previousWeekData.length;
-    final trend = currentAvg - previousAvg;
+    // Average only days that had habits scheduled — counting empty days
+    // as 0% would drag the average down misleadingly. Null when the
+    // whole week had no scheduled habits (nothing to compare).
+    final currentAvg = _averageRate(weekData);
+    final previousAvg = _averageRate(previousWeekData);
+    final trend = (currentAvg != null && previousAvg != null)
+        ? currentAvg - previousAvg
+        : null;
 
     return Card(
       elevation: 2,
@@ -69,7 +66,8 @@ class WeeklyPerformanceChart extends ConsumerWidget {
                         fontWeight: FontWeight.bold,
                       ),
                 ),
-                _buildTrendIndicator(context, trend),
+                // No badge without a last-week baseline to compare against
+                if (trend != null) _buildTrendIndicator(context, trend),
               ],
             ),
 
@@ -146,7 +144,7 @@ class WeeklyPerformanceChart extends ConsumerWidget {
                     horizontalInterval: 25,
                     getDrawingHorizontalLine: (value) {
                       return FlLine(
-                        color: Colors.grey.shade200,
+                        color: Theme.of(context).colorScheme.outlineVariant,
                         strokeWidth: 1,
                       );
                     },
@@ -179,7 +177,7 @@ class WeeklyPerformanceChart extends ConsumerWidget {
             Text(
               'Tap any bar to jump to that day',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.black54,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontStyle: FontStyle.italic,
                   ),
               textAlign: TextAlign.center,
@@ -190,50 +188,55 @@ class WeeklyPerformanceChart extends ConsumerWidget {
     );
   }
 
+  /// [trend] is the change in average completion rate vs the previous
+  /// week, in percentage points (already on the 0–100 scale — do not
+  /// multiply it again).
   Widget _buildTrendIndicator(BuildContext context, double trend) {
     final isPositive = trend >= 0;
-    // Calculate trend percentage and cap at ±100%
-    final rawTrendPercentage = (trend * 100).abs();
-    final trendPercentage = rawTrendPercentage.clamp(0, 100);
-    final isCapped = rawTrendPercentage > 100;
-    final displayPercentage = trendPercentage.toStringAsFixed(0);
+    final displayPercentage = trend.abs().toStringAsFixed(0);
 
-    final widget = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: (isPositive ? Colors.green : Colors.red).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isPositive ? Icons.trending_up : Icons.trending_down,
-            color: isPositive ? Colors.green : Colors.red,
-            size: 18,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            '$displayPercentage%${isCapped ? '+' : ''}',
-            style: TextStyle(
+    return Tooltip(
+      message: 'Average completion vs last week',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color:
+              (isPositive ? Colors.green : Colors.red).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isPositive ? Icons.trending_up : Icons.trending_down,
               color: isPositive ? Colors.green : Colors.red,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
+              size: 18,
             ),
-          ),
-        ],
+            const SizedBox(width: 4),
+            Text(
+              '${isPositive ? '+' : '-'}$displayPercentage%',
+              style: TextStyle(
+                color: isPositive ? Colors.green : Colors.red,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
 
-    // Add tooltip if value is capped
-    if (isCapped) {
-      return Tooltip(
-        message:
-            'Actual change: ${rawTrendPercentage.toStringAsFixed(0)}% (capped at 100% for display)',
-        child: widget,
-      );
-    }
-    return widget;
+  /// Average completion rate over the days that actually had habits
+  /// scheduled, or null when no day in the window had any
+  static double? _averageRate(List<_DayData> weekData) {
+    final daysWithData = weekData.where((data) => data.hasData).toList();
+    if (daysWithData.isEmpty) return null;
+    final sum = daysWithData.fold<double>(
+      0,
+      (sum, data) => sum + data.completionRate,
+    );
+    return sum / daysWithData.length;
   }
 
   Color _getBarColor(double rate) {
@@ -259,8 +262,11 @@ class WeeklyPerformanceChart extends ConsumerWidget {
         endDate.day,
       ).subtract(Duration(days: i));
 
-      final scheduledHabits =
-          allHabits.where((h) => h.isScheduledFor(date)).toList();
+      // Only habits that existed on the date — a habit created today
+      // must not count as "missed" on earlier days
+      final scheduledHabits = allHabits
+          .where((h) => h.existedOn(date) && h.isScheduledFor(date))
+          .toList();
       final completedCount = scheduledHabits.where((h) {
         return completionsState.isCompletedOn(h.id, date);
       }).length;
@@ -273,6 +279,7 @@ class WeeklyPerformanceChart extends ConsumerWidget {
         date: date,
         dayLabel: DateFormat('EEE').format(date).substring(0, 1),
         completionRate: rate,
+        hasData: scheduledHabits.isNotEmpty,
       ));
     }
 
@@ -285,9 +292,14 @@ class _DayData {
   final String dayLabel;
   final double completionRate;
 
+  /// Whether any habit was scheduled on this day (false = the 0% bar
+  /// means "nothing to do", not "everything missed")
+  final bool hasData;
+
   _DayData({
     required this.date,
     required this.dayLabel,
     required this.completionRate,
+    required this.hasData,
   });
 }

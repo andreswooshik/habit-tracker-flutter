@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/models/habit_frequency.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import '../mocks/provider_container.dart';
+import '../mocks/test_habits.dart';
 
 void main() {
   late ProviderContainer container;
@@ -19,7 +19,7 @@ void main() {
 
   group('Phase 5: Calendar Providers - calendarDataProvider', () {
     test('generates full month of dates', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Daily',
         category: HabitCategory.health,
@@ -37,7 +37,7 @@ void main() {
     });
 
     test('marks completed dates with 1', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Test',
         category: HabitCategory.health,
@@ -63,7 +63,7 @@ void main() {
     });
 
     test('marks incomplete dates with 0', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Test',
         category: HabitCategory.health,
@@ -81,7 +81,7 @@ void main() {
     });
 
     test('handles different month lengths correctly', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Test',
         category: HabitCategory.health,
@@ -122,7 +122,7 @@ void main() {
 
   group('Phase 5: Calendar Providers - habitCompletionsInRangeProvider', () {
     test('returns completions within date range', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Test',
         category: HabitCategory.health,
@@ -160,7 +160,7 @@ void main() {
     });
 
     test('excludes completions outside range', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Test',
         category: HabitCategory.health,
@@ -194,7 +194,7 @@ void main() {
     });
 
     test('returns empty set for no completions', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Test',
         category: HabitCategory.health,
@@ -220,7 +220,7 @@ void main() {
       // Add 2 daily habits
       for (int i = 1; i <= 2; i++) {
         container.read(habitsProvider.notifier).addHabit(
-              Habit.create(
+              backdatedHabit(
                 id: '$i',
                 name: 'Daily $i',
                 category: HabitCategory.health,
@@ -231,7 +231,7 @@ void main() {
 
       // Add 1 weekdays habit
       container.read(habitsProvider.notifier).addHabit(
-            Habit.create(
+            backdatedHabit(
               id: '3',
               name: 'Weekdays',
               category: HabitCategory.productivity,
@@ -251,13 +251,13 @@ void main() {
     });
 
     test('excludes archived habits', () {
-      final habit1 = Habit.create(
+      final habit1 = backdatedHabit(
         id: '1',
         name: 'Active',
         category: HabitCategory.health,
         frequency: HabitFrequency.everyDay,
       );
-      final habit2 = Habit.create(
+      final habit2 = backdatedHabit(
         id: '2',
         name: 'To Archive',
         category: HabitCategory.health,
@@ -277,7 +277,7 @@ void main() {
 
   group('Phase 5: Calendar Providers - completionRateProvider', () {
     test('calculates correct rate for daily habit', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Daily',
         category: HabitCategory.health,
@@ -306,7 +306,7 @@ void main() {
     });
 
     test('calculates correct rate for weekdays habit', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Weekdays',
         category: HabitCategory.productivity,
@@ -339,7 +339,7 @@ void main() {
     });
 
     test('returns 1.0 for 100% completion', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Perfect',
         category: HabitCategory.health,
@@ -380,7 +380,7 @@ void main() {
 
     test('returns 0.0 when no scheduled days in range', () {
       // Weekdays habit, but query only weekend
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Weekdays',
         category: HabitCategory.productivity,
@@ -404,13 +404,13 @@ void main() {
 
   group('Phase 5: Calendar Providers - habitsForDateProvider', () {
     test('returns habits scheduled for given date', () {
-      final dailyHabit = Habit.create(
+      final dailyHabit = backdatedHabit(
         id: '1',
         name: 'Daily',
         category: HabitCategory.health,
         frequency: HabitFrequency.everyDay,
       );
-      final weekdaysHabit = Habit.create(
+      final weekdaysHabit = backdatedHabit(
         id: '2',
         name: 'Weekdays',
         category: HabitCategory.productivity,

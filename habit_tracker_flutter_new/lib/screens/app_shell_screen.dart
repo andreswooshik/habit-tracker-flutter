@@ -81,6 +81,10 @@ class _AppShellScreenState extends ConsumerState<AppShellScreen> {
           appBar: AppBar(
             title: Text(_destinations[_selectedIndex].label),
             centerTitle: false,
+            actions: const [
+              _SyncStatusIndicator(),
+              SizedBox(width: 8),
+            ],
           ),
           body: Row(
             children: [
@@ -143,4 +147,45 @@ class _AppDestination {
     required this.icon,
     required this.selectedIcon,
   });
+}
+
+/// Cloud sync status in the app bar (cloud mode only).
+///
+/// Turns the invisible offline-first behavior into something users can
+/// trust: a checkmark cloud when everything is synced, and a badged
+/// upload cloud (tap to retry) while writes wait for a connection.
+class _SyncStatusIndicator extends ConsumerWidget {
+  const _SyncStatusIndicator();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final coordinator = ref.watch(cloudSyncCoordinatorProvider);
+    // Local-only mode: no cloud, nothing to indicate
+    if (coordinator == null) return const SizedBox.shrink();
+
+    return ValueListenableBuilder<int>(
+      valueListenable: coordinator.pendingCount,
+      builder: (context, pending, _) {
+        if (pending == 0) {
+          return Tooltip(
+            message: 'All changes synced',
+            child: Icon(
+              Icons.cloud_done_outlined,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          );
+        }
+        return IconButton(
+          tooltip:
+              '$pending change${pending == 1 ? '' : 's'} waiting to sync — '
+              'tap to retry',
+          onPressed: coordinator.flush,
+          icon: Badge.count(
+            count: pending,
+            child: const Icon(Icons.cloud_upload_outlined),
+          ),
+        );
+      },
+    );
+  }
 }

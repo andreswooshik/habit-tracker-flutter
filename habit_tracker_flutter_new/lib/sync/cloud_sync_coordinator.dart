@@ -20,6 +20,10 @@ class CloudSyncCoordinator {
   final IHabitsRepository _remoteHabits;
   final ICompletionsRepository _remoteCompletions;
 
+  /// Live count of writes waiting to reach the cloud — the app bar's
+  /// sync indicator listens to this to show offline status
+  final ValueNotifier<int> pendingCount;
+
   bool _flushing = false;
 
   CloudSyncCoordinator({
@@ -28,7 +32,8 @@ class CloudSyncCoordinator {
     required ICompletionsRepository remoteCompletions,
   })  : _queue = queue,
         _remoteHabits = remoteHabits,
-        _remoteCompletions = remoteCompletions;
+        _remoteCompletions = remoteCompletions,
+        pendingCount = ValueNotifier(queue.length);
 
   /// Whether there are writes that have not reached the cloud yet
   bool get hasPendingOps => !_queue.isEmpty;
@@ -40,6 +45,7 @@ class CloudSyncCoordinator {
   /// queued before it). Never throws — on failure the op stays queued.
   Future<void> record(SyncOp op) async {
     await _queue.enqueue(op);
+    pendingCount.value = _queue.length;
     await flush();
   }
 
@@ -60,6 +66,7 @@ class CloudSyncCoordinator {
           return false;
         }
         await _queue.removeFirst();
+        pendingCount.value = _queue.length;
       }
       return true;
     } finally {

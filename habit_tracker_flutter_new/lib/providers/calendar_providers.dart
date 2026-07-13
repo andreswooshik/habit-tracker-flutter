@@ -48,7 +48,10 @@ final habitsScheduledCountProvider =
   final habitState = ref.watch(habitsProvider);
 
   return habitState.habits
-      .where((habit) => !habit.isArchived && habit.isScheduledFor(date))
+      .where((habit) =>
+          !habit.isArchived &&
+          habit.existedOn(date) &&
+          habit.isScheduledFor(date))
       .length;
 });
 
@@ -57,7 +60,10 @@ final habitsForDateProvider =
   final habitState = ref.watch(habitsProvider);
 
   return habitState.habits
-      .where((habit) => !habit.isArchived && habit.isScheduledFor(date))
+      .where((habit) =>
+          !habit.isArchived &&
+          habit.existedOn(date) &&
+          habit.isScheduledFor(date))
       .toList();
 });
 
@@ -79,7 +85,7 @@ final completionRateProvider = Provider.autoDispose
   DateTime current = normalizedStart;
 
   while (!current.isAfter(normalizedEnd)) {
-    if (habit.isScheduledFor(current)) {
+    if (habit.existedOn(current) && habit.isScheduledFor(current)) {
       scheduledDays++;
     }
     current = current.add(const Duration(days: 1));

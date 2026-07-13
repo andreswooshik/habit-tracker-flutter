@@ -7,15 +7,33 @@ import 'package:habit_tracker_flutter_new/widgets/habit_detail/habit_detail.dart
 import 'package:habit_tracker_flutter_new/widgets/animations/animations.dart';
 
 class HabitDetailScreen extends ConsumerWidget {
-  final Habit habit;
+  /// The habit is looked up live from habitsProvider rather than passed
+  /// as an object, so the screen reflects edits immediately (a passed
+  /// snapshot goes stale the moment the habit is renamed) and survives
+  /// the habit being deleted while open.
+  final String habitId;
+
+  /// Tag of the card hero this screen was opened from (see HabitCard)
+  final String? heroTag;
 
   const HabitDetailScreen({
     super.key,
-    required this.habit,
+    required this.habitId,
+    this.heroTag,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final habit = ref.watch(habitsProvider).habitsById[habitId];
+
+    // Deleted (or never existed): leave a way back instead of crashing
+    if (habit == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: Text('This habit no longer exists')),
+      );
+    }
+
     final selectedDate = ref.watch(selectedDateProvider);
     final habitInsights = ref.watch(habitInsightsForHabitProvider(habit.id));
     final streakData = ref.watch(habitStreakProvider(habit.id));
@@ -39,8 +57,9 @@ class HabitDetailScreen extends ConsumerWidget {
             // App Bar with gradient header
             HabitDetailAppBar(
               habit: habit,
-              onEdit: () => _navigateToEdit(context),
-              onDelete: () => _confirmDelete(context, ref),
+              heroTag: heroTag ?? 'habit_card_${habit.id}',
+              onEdit: () => _navigateToEdit(context, habit),
+              onDelete: () => _confirmDelete(context, ref, habit),
             ),
 
             // Content sections
@@ -88,7 +107,7 @@ class HabitDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _navigateToEdit(BuildContext context) {
+  void _navigateToEdit(BuildContext context, Habit habit) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => AddEditHabitScreen(habit: habit),
@@ -96,7 +115,11 @@ class HabitDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    Habit habit,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

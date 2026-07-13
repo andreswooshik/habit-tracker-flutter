@@ -81,7 +81,7 @@ class EmptyOnboardingCard extends ConsumerWidget {
                       Text(
                         'Start from scratch or pick a quick template.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey.shade600,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                       ),
                     ],

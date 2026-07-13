@@ -47,3 +47,6 @@ export 'theme_providers.dart';
 
 // Smart habit reminders
 export 'notification_providers.dart';
+
+// Cloud sync status (offline-first pending writes)
+export 'sync_providers.dart';

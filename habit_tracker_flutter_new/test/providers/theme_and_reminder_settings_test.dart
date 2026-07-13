@@ -38,11 +38,11 @@ class FakeNotificationService implements INotificationService {
 
 void main() {
   group('ThemeModeNotifier', () {
-    test('defaults to system mode', () {
+    test('defaults to light mode', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      expect(container.read(themeModeProvider), ThemeMode.system);
+      expect(container.read(themeModeProvider), ThemeMode.light);
     });
 
     test('persists the chosen mode and restores it', () async {

@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/models/habit_category.dart';
 import 'package:habit_tracker_flutter_new/models/habit_frequency.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import '../mocks/provider_container.dart';
+import '../mocks/test_habits.dart';
 
 void main() {
   late ProviderContainer container;
@@ -25,13 +25,13 @@ void main() {
 
     test('filters habits scheduled for selected date', () {
       // Add habits with different frequencies
-      final dailyHabit = Habit.create(
+      final dailyHabit = backdatedHabit(
         id: '1',
         name: 'Daily',
         category: HabitCategory.health,
         frequency: HabitFrequency.everyDay,
       );
-      final weekdaysHabit = Habit.create(
+      final weekdaysHabit = backdatedHabit(
         id: '2',
         name: 'Weekdays',
         category: HabitCategory.productivity,
@@ -55,7 +55,7 @@ void main() {
 
     test('excludes habits not scheduled for selected date', () {
       // Add weekdays habit
-      final weekdaysHabit = Habit.create(
+      final weekdaysHabit = backdatedHabit(
         id: '1',
         name: 'Weekdays',
         category: HabitCategory.productivity,
@@ -75,13 +75,13 @@ void main() {
     });
 
     test('excludes archived habits', () {
-      final activeHabit = Habit.create(
+      final activeHabit = backdatedHabit(
         id: '1',
         name: 'Active',
         category: HabitCategory.health,
         frequency: HabitFrequency.everyDay,
       );
-      final habitToArchive = Habit.create(
+      final habitToArchive = backdatedHabit(
         id: '2',
         name: 'Will Archive',
         category: HabitCategory.health,
@@ -103,19 +103,19 @@ void main() {
 
     test('sorts incomplete habits before completed habits', () {
       // Add three daily habits
-      final habit1 = Habit.create(
+      final habit1 = backdatedHabit(
         id: '1',
         name: 'Zzz Last',
         category: HabitCategory.health,
         frequency: HabitFrequency.everyDay,
       );
-      final habit2 = Habit.create(
+      final habit2 = backdatedHabit(
         id: '2',
         name: 'Aaa First',
         category: HabitCategory.health,
         frequency: HabitFrequency.everyDay,
       );
-      final habit3 = Habit.create(
+      final habit3 = backdatedHabit(
         id: '3',
         name: 'Mmm Middle',
         category: HabitCategory.health,
@@ -143,19 +143,19 @@ void main() {
 
     test('sorts alphabetically within same completion status', () {
       // Add habits in reverse alphabetical order
-      final habitZ = Habit.create(
+      final habitZ = backdatedHabit(
         id: 'z',
         name: 'Zzz',
         category: HabitCategory.health,
         frequency: HabitFrequency.everyDay,
       );
-      final habitM = Habit.create(
+      final habitM = backdatedHabit(
         id: 'm',
         name: 'Mmm',
         category: HabitCategory.health,
         frequency: HabitFrequency.everyDay,
       );
-      final habitA = Habit.create(
+      final habitA = backdatedHabit(
         id: 'a',
         name: 'Aaa',
         category: HabitCategory.health,
@@ -177,7 +177,7 @@ void main() {
 
     test('handles custom frequency correctly', () {
       // Monday, Wednesday, Friday habit
-      final customHabit = Habit.create(
+      final customHabit = backdatedHabit(
         id: '1',
         name: 'MWF',
         category: HabitCategory.fitness,
@@ -208,7 +208,7 @@ void main() {
 
     test('updates when selected date changes', () {
       // Add weekdays habit
-      final weekdaysHabit = Habit.create(
+      final weekdaysHabit = backdatedHabit(
         id: '1',
         name: 'Work',
         category: HabitCategory.productivity,
@@ -233,7 +233,7 @@ void main() {
 
   group('Phase 5: Computed Providers - habitCompletionProvider', () {
     test('returns false when habit not completed', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Test',
         category: HabitCategory.health,
@@ -251,7 +251,7 @@ void main() {
     });
 
     test('returns true when habit completed', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Test',
         category: HabitCategory.health,
@@ -271,7 +271,7 @@ void main() {
     });
 
     test('handles different dates independently', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Test',
         category: HabitCategory.health,
@@ -299,7 +299,7 @@ void main() {
     });
 
     test('normalizes date to midnight', () {
-      final habit = Habit.create(
+      final habit = backdatedHabit(
         id: '1',
         name: 'Test',
         category: HabitCategory.health,
@@ -328,7 +328,7 @@ void main() {
       // Add 3 daily habits
       for (int i = 1; i <= 3; i++) {
         container.read(habitsProvider.notifier).addHabit(
-              Habit.create(
+              backdatedHabit(
                 id: '$i',
                 name: 'Habit $i',
                 category: HabitCategory.health,
@@ -348,7 +348,7 @@ void main() {
       // Add 3 daily habits
       for (int i = 1; i <= 3; i++) {
         container.read(habitsProvider.notifier).addHabit(
-              Habit.create(
+              backdatedHabit(
                 id: '$i',
                 name: 'Habit $i',
                 category: HabitCategory.health,
@@ -372,7 +372,7 @@ void main() {
       // Add 4 daily habits
       for (int i = 1; i <= 4; i++) {
         container.read(habitsProvider.notifier).addHabit(
-              Habit.create(
+              backdatedHabit(
                 id: '$i',
                 name: 'Habit $i',
                 category: HabitCategory.health,
@@ -402,7 +402,7 @@ void main() {
       // Add 2 daily habits
       for (int i = 1; i <= 2; i++) {
         container.read(habitsProvider.notifier).addHabit(
-              Habit.create(
+              backdatedHabit(
                 id: '$i',
                 name: 'Habit $i',
                 category: HabitCategory.health,
@@ -428,7 +428,7 @@ void main() {
 
     void addWeekdaysHabit() {
       container.read(habitsProvider.notifier).addHabit(
-            Habit.create(
+            backdatedHabit(
               id: '1',
               name: 'Weekdays',
               category: HabitCategory.productivity,

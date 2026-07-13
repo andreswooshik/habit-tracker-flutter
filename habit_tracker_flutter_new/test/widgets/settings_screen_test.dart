@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:habit_tracker_flutter_new/providers/auth_providers.dart';
 import 'package:habit_tracker_flutter_new/providers/notification_providers.dart';
 import 'package:habit_tracker_flutter_new/providers/repository_providers.dart';
 import 'package:habit_tracker_flutter_new/providers/theme_providers.dart';
 import 'package:habit_tracker_flutter_new/screens/settings_screen.dart';
+import 'package:habit_tracker_flutter_new/services/noop_auth_service.dart';
 
 import '../mocks/mock_completions_repository.dart';
 import '../mocks/mock_habits_repository.dart';
@@ -16,6 +18,10 @@ void main() {
         habitsRepositoryProvider.overrideWithValue(MockHabitsRepository()),
         completionsRepositoryProvider
             .overrideWithValue(MockCompletionsRepository()),
+        // Tests must not depend on the developer's local api_keys.dart:
+        // with real Supabase keys configured the default auth provider
+        // would touch Supabase.instance, which tests never initialize
+        authServiceProvider.overrideWithValue(const NoopAuthService()),
       ],
       child: const MaterialApp(
         home: Scaffold(body: SettingsScreen()),
@@ -28,7 +34,7 @@ void main() {
       await tester.pumpWidget(buildScreen());
       await tester.pumpAndSettle();
 
-      expect(find.text('System default'), findsOneWidget);
+      expect(find.text('Light mode'), findsOneWidget);
 
       await tester.tap(find.text('Theme'));
       await tester.pumpAndSettle();

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker_flutter_new/models/habit.dart';
 import 'package:habit_tracker_flutter_new/providers/providers.dart';
 import 'package:habit_tracker_flutter_new/screens/habit_detail_screen.dart';
+import 'package:habit_tracker_flutter_new/widgets/habit_card.dart';
 
 import '../mocks/mock_completions_repository.dart';
 import '../mocks/mock_habits_repository.dart';
@@ -26,7 +27,7 @@ void main() {
           MockCompletionsRepository(),
         ),
       ],
-      child: MaterialApp(home: HabitDetailScreen(habit: testHabit)),
+      child: MaterialApp(home: HabitDetailScreen(habitId: testHabit.id)),
     );
   }
 
@@ -68,6 +69,92 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text('Drink Water added'), findsOneWidget);
+    });
+
+    testWidgets('reflects an edit made elsewhere (no stale snapshot)',
+        (tester) async {
+      await tester.pumpWidget(buildTestApp());
+      expect(find.text('Drink Water'), findsOneWidget);
+
+      final context = tester.element(find.byType(HabitDetailScreen));
+      final container = ProviderScope.containerOf(context);
+      await container
+          .read(habitsProvider.notifier)
+          .updateHabit('habit-1', testHabit.copyWith(name: 'Drink More Water'));
+      await tester.pump();
+
+      expect(find.text('Drink Water'), findsNothing);
+      expect(find.text('Drink More Water'), findsOneWidget);
+    });
+
+    testWidgets('shows a fallback instead of crashing when the habit is gone',
+        (tester) async {
+      final habitsRepository = MockHabitsRepository();
+      // Deliberately not seeded — habitId matches nothing
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            habitsRepositoryProvider.overrideWithValue(habitsRepository),
+            completionsRepositoryProvider
+                .overrideWithValue(MockCompletionsRepository()),
+          ],
+          child: const MaterialApp(
+            home: HabitDetailScreen(habitId: 'does-not-exist'),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('This habit no longer exists'), findsOneWidget);
+    });
+
+    testWidgets(
+        'two HabitCards for the same habit on different surfaces use '
+        'distinct hero tags, so opening detail from either does not crash',
+        (tester) async {
+      final habitsRepository = MockHabitsRepository();
+      await habitsRepository.saveHabit(testHabit);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            habitsRepositoryProvider.overrideWithValue(habitsRepository),
+            completionsRepositoryProvider
+                .overrideWithValue(MockCompletionsRepository()),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: Column(
+                children: [
+                  HabitCard(
+                    habit: testHabit,
+                    selectedDate: DateTime.now(),
+                    heroTag: 'today_habit_${testHabit.id}',
+                  ),
+                  HabitCard(
+                    habit: testHabit,
+                    selectedDate: DateTime.now(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final heroes = tester.widgetList<Hero>(find.byType(Hero)).toList();
+      expect(heroes.map((h) => h.tag).toSet(), hasLength(heroes.length));
+
+      // Navigate from the second (Habits-tab-style) card and confirm no
+      // "multiple heroes share the same tag" exception on the way in
+      await tester.tap(find.byType(HabitCard).last);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(HabitDetailScreen), findsOneWidget);
     });
   });
 }

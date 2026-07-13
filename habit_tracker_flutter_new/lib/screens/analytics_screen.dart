@@ -7,6 +7,7 @@ import 'package:habit_tracker_flutter_new/widgets/analytics/completion_rate_char
 import 'package:habit_tracker_flutter_new/widgets/analytics/category_performance_card.dart';
 import 'package:habit_tracker_flutter_new/widgets/analytics/streak_analytics_card.dart';
 import 'package:habit_tracker_flutter_new/widgets/analytics/best_days_analysis.dart';
+import 'package:habit_tracker_flutter_new/widgets/analytics/this_week_card.dart';
 
 /// Analytics & Insights Screen
 ///
@@ -63,7 +64,12 @@ class AnalyticsScreen extends ConsumerWidget {
 
             SizedBox(height: AppConstants.spacingLarge),
 
-            // Best Days Analysis
+            // Current week — pending/in-progress states live here...
+            const ThisWeekCard(),
+
+            SizedBox(height: AppConstants.spacingLarge),
+
+            // ...while Best Days is the historical aggregate
             const BestDaysAnalysis(),
 
             SizedBox(height: AppConstants.spacingXLarge),
