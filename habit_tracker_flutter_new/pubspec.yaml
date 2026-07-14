@@ -53,6 +53,7 @@ dependencies:
   hive: ^2.2.3              # Fast key-value database
   hive_flutter: ^1.1.0      # Flutter extensions for Hive
   path_provider: ^2.1.1     # Get application directory paths
+  image_picker: ^1.1.2      # Capture/pick a photo when completing a habit
   http: ^1.6.0
   supabase_flutter: ^2.15.4
   flutter_local_notifications: ^22.0.1

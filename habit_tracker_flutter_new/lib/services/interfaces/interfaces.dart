@@ -15,3 +15,4 @@ export 'i_auth_service.dart';
 export 'i_weekly_summary_service.dart';
 export 'i_recommendation_service.dart';
 export 'i_notification_service.dart';
+export 'i_photo_recap_service.dart';

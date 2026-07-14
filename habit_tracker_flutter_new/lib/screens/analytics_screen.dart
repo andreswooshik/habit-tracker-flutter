@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker_flutter_new/utils/app_constants.dart';
 import 'package:habit_tracker_flutter_new/widgets/analytics/time_range_selector.dart';
 import 'package:habit_tracker_flutter_new/widgets/analytics/weekly_summary_card.dart';
+import 'package:habit_tracker_flutter_new/widgets/analytics/weekly_photos_card.dart';
 import 'package:habit_tracker_flutter_new/widgets/analytics/completion_rate_chart.dart';
 import 'package:habit_tracker_flutter_new/widgets/analytics/category_performance_card.dart';
 import 'package:habit_tracker_flutter_new/widgets/analytics/streak_analytics_card.dart';
@@ -41,6 +42,11 @@ class AnalyticsScreen extends ConsumerWidget {
           children: [
             // AI Weekly Summary
             const WeeklySummaryCard(),
+
+            SizedBox(height: AppConstants.spacingLarge),
+
+            // Weekly Photo Journal (habit photos + AI recap)
+            const WeeklyPhotosCard(),
 
             SizedBox(height: AppConstants.spacingLarge),
 

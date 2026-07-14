@@ -322,10 +322,77 @@ class HabitCard extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      ref.read(completionsProvider.notifier).markComplete(
+      await ref.read(completionsProvider.notifier).markComplete(
             habit.id,
             selectedDate,
           );
+      // Offer an optional "proof" photo of the moment (cloud storage only)
+      await _maybeCapturePhoto(ref);
+    }
+  }
+
+  /// After a habit is completed, optionally let the user snap a photo of
+  /// the moment. Silently skips when cloud storage isn't available so
+  /// local-only mode is unaffected.
+  Future<void> _maybeCapturePhoto(WidgetRef ref) async {
+    if (!ref.read(photosRepositoryProvider).isEnabled) return;
+
+    final context = ref.context;
+    // Captured before the async gaps below so we don't reach back into
+    // ref.context after an await.
+    final messenger = ScaffoldMessenger.of(context);
+    final wantsPhoto = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.camera_alt, color: Colors.deepPurple, size: 26),
+            const SizedBox(width: 12),
+            const Expanded(child: Text('Capture the moment?')),
+          ],
+        ),
+        content: Text(
+          'Add a photo of you doing "${habit.name}". It\'ll appear in this '
+          'week\'s photo journal.',
+          style: const TextStyle(fontSize: 16),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Not now'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            icon: const Icon(Icons.camera_alt, size: 20),
+            label: const Text('Take Photo'),
+          ),
+        ],
+      ),
+    );
+    if (wantsPhoto != true) return;
+
+    try {
+      final saved =
+          await ref.read(photoCaptureProvider.notifier).captureForHabit(habit.id);
+      if (saved == null) return; // camera cancelled
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Photo saved to your weekly journal 📸'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (_) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: const Text('Could not save the photo. Please try again.'),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 

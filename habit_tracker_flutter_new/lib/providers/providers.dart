@@ -50,3 +50,6 @@ export 'notification_providers.dart';
 
 // Cloud sync status (offline-first pending writes)
 export 'sync_providers.dart';
+
+// Habit completion photos + AI weekly photo recap
+export 'photos_providers.dart';

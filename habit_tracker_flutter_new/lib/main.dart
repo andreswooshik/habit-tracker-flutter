@@ -15,8 +15,11 @@ import 'package:habit_tracker_flutter_new/repositories/hive/hive_completions_rep
 import 'package:habit_tracker_flutter_new/repositories/hive/hive_settings_repository.dart';
 import 'package:habit_tracker_flutter_new/repositories/interfaces/i_completions_repository.dart';
 import 'package:habit_tracker_flutter_new/repositories/interfaces/i_habits_repository.dart';
+import 'package:habit_tracker_flutter_new/repositories/interfaces/i_photos_repository.dart';
+import 'package:habit_tracker_flutter_new/repositories/noop_photos_repository.dart';
 import 'package:habit_tracker_flutter_new/repositories/supabase/supabase_completions_repository.dart';
 import 'package:habit_tracker_flutter_new/repositories/supabase/supabase_habits_repository.dart';
+import 'package:habit_tracker_flutter_new/repositories/supabase/supabase_photos_repository.dart';
 import 'package:habit_tracker_flutter_new/repositories/synced/synced_completions_repository.dart';
 import 'package:habit_tracker_flutter_new/repositories/synced/synced_habits_repository.dart';
 import 'package:habit_tracker_flutter_new/services/interfaces/i_notification_service.dart';
@@ -47,6 +50,8 @@ void main() async {
   // local-only on Hive, no login.
   final IHabitsRepository habitsRepository;
   final ICompletionsRepository completionsRepository;
+  // Completion photos live in Supabase Storage; no-op in local-only mode.
+  IPhotosRepository photosRepository = const NoopPhotosRepository();
   CloudSyncCoordinator? syncCoordinator;
 
   if (ApiKeys.supabaseConfigured) {
@@ -74,6 +79,7 @@ void main() async {
       remote: SupabaseCompletionsRepository(),
       coordinator: coordinator,
     );
+    photosRepository = SupabasePhotosRepository();
   } else {
     habitsRepository = HiveHabitsRepository();
     completionsRepository = HiveCompletionsRepository();
@@ -109,6 +115,7 @@ void main() async {
         // Provide repository instances to the provider scope
         habitsRepositoryProvider.overrideWithValue(habitsRepository),
         completionsRepositoryProvider.overrideWithValue(completionsRepository),
+        photosRepositoryProvider.overrideWithValue(photosRepository),
         settingsRepositoryProvider.overrideWithValue(settingsRepository),
         notificationServiceProvider.overrideWithValue(notificationService),
         cloudSyncCoordinatorProvider.overrideWithValue(syncCoordinator),

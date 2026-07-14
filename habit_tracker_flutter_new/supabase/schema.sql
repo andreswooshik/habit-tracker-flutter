@@ -84,10 +84,27 @@ create table if not exists public.completions (
   constraint completions_unique_per_day unique (habit_id, completed_on)
 );
 
+-- Optional photos captured while completing a habit ("proof" / journal).
+-- The image bytes live in the 'habit-photos' Storage bucket; this table
+-- holds the metadata used for weekly grouping and the AI recap.
+create table if not exists public.habit_photos (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  habit_id     uuid not null references public.habits (id) on delete cascade,
+  storage_path text not null,
+  caption      text,
+  taken_at     timestamptz not null default now(),
+  -- Monday of the week the photo belongs to; makes weekly queries trivial
+  week_start   date not null default (current_date - ((extract(isodow from current_date)::int - 1))),
+  created_at   timestamptz not null default now()
+);
+
 -- ============ INDEXES ============
 create index if not exists habits_user_idx       on public.habits (user_id) where not is_archived;
 create index if not exists completions_user_idx  on public.completions (user_id, completed_on desc);
 create index if not exists completions_habit_idx on public.completions (habit_id, completed_on desc);
+create index if not exists habit_photos_user_idx on public.habit_photos (user_id, taken_at desc);
+create index if not exists habit_photos_week_idx on public.habit_photos (user_id, week_start);
 
 -- ============ updated_at TRIGGER ============
 create or replace function public.set_updated_at()
@@ -109,9 +126,10 @@ create trigger profiles_set_updated_at
   for each row execute function public.set_updated_at();
 
 -- ============ ROW LEVEL SECURITY ============
-alter table public.profiles    enable row level security;
-alter table public.habits      enable row level security;
-alter table public.completions enable row level security;
+alter table public.profiles     enable row level security;
+alter table public.habits       enable row level security;
+alter table public.completions  enable row level security;
+alter table public.habit_photos enable row level security;
 
 drop policy if exists "own profile select" on public.profiles;
 create policy "own profile select" on public.profiles
@@ -145,6 +163,46 @@ create policy "own completions insert" on public.completions
 drop policy if exists "own completions delete" on public.completions;
 create policy "own completions delete" on public.completions
   for delete using (auth.uid() = user_id);
+
+drop policy if exists "own photos select" on public.habit_photos;
+create policy "own photos select" on public.habit_photos
+  for select using (auth.uid() = user_id);
+drop policy if exists "own photos insert" on public.habit_photos;
+create policy "own photos insert" on public.habit_photos
+  for insert with check (
+    auth.uid() = user_id
+    and exists (select 1 from public.habits h where h.id = habit_id and h.user_id = auth.uid())
+  );
+drop policy if exists "own photos delete" on public.habit_photos;
+create policy "own photos delete" on public.habit_photos
+  for delete using (auth.uid() = user_id);
+
+-- ============ STORAGE: habit-photos bucket ============
+-- Private bucket (public = false); the app reads images through short-lived
+-- signed URLs. Files are stored under '<user_id>/...', so every object
+-- policy checks that the first path segment equals the caller's uid.
+insert into storage.buckets (id, name, public)
+values ('habit-photos', 'habit-photos', false)
+on conflict (id) do nothing;
+
+drop policy if exists "own habit-photos read" on storage.objects;
+create policy "own habit-photos read" on storage.objects
+  for select to authenticated using (
+    bucket_id = 'habit-photos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+drop policy if exists "own habit-photos insert" on storage.objects;
+create policy "own habit-photos insert" on storage.objects
+  for insert to authenticated with check (
+    bucket_id = 'habit-photos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+drop policy if exists "own habit-photos delete" on storage.objects;
+create policy "own habit-photos delete" on storage.objects
+  for delete to authenticated using (
+    bucket_id = 'habit-photos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
 
 -- ============ HELPER VIEW: completion counts ============
 create or replace view public.habit_completion_counts
